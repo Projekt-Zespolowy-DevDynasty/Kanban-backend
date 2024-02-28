@@ -1,4 +1,4 @@
-package projektzespolowy.devdynasty.models;
+package projektzespolowy.models;
 
 import jakarta.persistence.*;
 import lombok.*;

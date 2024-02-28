@@ -1,7 +1,7 @@
-package projektzespolowy.devdynasty.repository;
+package projektzespolowy.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import projektzespolowy.devdynasty.models.Board;
+import projektzespolowy.models.Board;
 
 public interface BoardRepository extends JpaRepository<Board, Long> {
 }
