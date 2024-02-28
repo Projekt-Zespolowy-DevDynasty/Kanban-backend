@@ -1,18 +1,14 @@
 package projektzespolowy.models;
 
-import jakarta.persistence.*;
-import lombok.*;
-
-import java.util.List;
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 
 //TODO: wszystkie adnotacje
-public class Board {
+public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id", nullable = false)
     private Long id;
-
-    // TODO: relacja 1:n
-    private List<Card> cards;
-
 }
