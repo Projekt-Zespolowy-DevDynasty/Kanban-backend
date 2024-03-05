@@ -16,8 +16,8 @@ public class testowy {
     public List<Card> test(){
         Card kartaToDo = new Card();
         Task task = new Task(1L, "task1");
-        Task task2 = new Task(1L, "task2");
-        Task task3 = new Task(1L, "task3");
+        Task task2 = new Task(2L, "task2");
+        Task task3 = new Task(3L, "task3");
         kartaToDo.setTasks(List.of(task, task2, task3));
         kartaToDo.setName("To Do");
         Card kartaInProgress = new Card();
