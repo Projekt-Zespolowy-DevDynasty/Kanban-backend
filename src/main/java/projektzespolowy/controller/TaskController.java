@@ -3,7 +3,6 @@ package projektzespolowy.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import projektzespolowy.models.Board;
 import projektzespolowy.models.Task;
 import projektzespolowy.repository.TaskRepository;
 import projektzespolowy.wyjatki.ResourceNotFoundException;
