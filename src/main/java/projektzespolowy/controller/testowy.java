@@ -23,8 +23,10 @@ public class testowy {
         Task task3 = new Task(3L, "cos zrobic ");
         kartaToDo.setTasks(List.of(task, task2, task3));
         kartaToDo.setName("To Do");
+        kartaToDo.setId(1L);
         Card kartaInProgress = new Card();
         kartaInProgress.setName("In Progress");
+        kartaInProgress.setTasks(List.of(task));
         Card kartaDone = new Card();
         kartaDone.setName("Done");
         Card kartaJakasinna = new Card();

@@ -23,6 +23,7 @@ public class Card {
     @OneToMany
     //@JoinColumn(name = "card_id")
     private List<Task> tasks;
+    private boolean deletable;
     //TODO: max tasks
 
 }
