@@ -20,7 +20,9 @@ public class Card {
     private Long id;
     private String name;
 
-    @OneToMany//(mappedBy = "card")
+    @OneToMany
+    //@JoinColumn(name = "card_id")
     private List<Task> tasks;
+    //TODO: max tasks
 
 }

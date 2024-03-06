@@ -9,6 +9,7 @@ import projektzespolowy.wyjatki.ResourceNotFoundException;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/api/tasks")
 public class TaskController {
