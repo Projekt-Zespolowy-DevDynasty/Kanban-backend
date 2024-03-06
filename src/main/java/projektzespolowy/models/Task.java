@@ -18,7 +18,4 @@ public class Task {
     private Long id;
 
     private String name;
-//    @ManyToOne
-//    @JoinColumn(name = "card_id", insertable = false, updatable = false)
-//    private Card card;
 }

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @NoArgsConstructor
@@ -21,9 +22,5 @@ public class Card {
     private String name;
 
     @OneToMany
-    //@JoinColumn(name = "card_id")
     private List<Task> tasks;
-    private boolean deletable;
-    //TODO: max tasks
-
 }
