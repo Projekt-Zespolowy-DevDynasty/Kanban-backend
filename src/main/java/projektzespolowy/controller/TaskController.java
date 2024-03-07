@@ -51,9 +51,10 @@ public class TaskController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCard(@PathVariable Long id) {
 
-
         Card card = cardRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + id));
-
+//        if (card.getName().equals("To do") || (card.getName().equals("Done"))) {
+//            throw new UnsupportedOperationException("Nie można usunąć tej karty.");
+//        }
         cardRepository.delete(card);
     }
 }

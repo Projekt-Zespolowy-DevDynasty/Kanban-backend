@@ -9,6 +9,7 @@ import projektzespolowy.repository.CardRepository;
 import projektzespolowy.repository.TaskRepository;
 import projektzespolowy.wyjatki.ResourceNotFoundException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:4200")
@@ -27,10 +28,25 @@ public class CardController {
 
     @GetMapping("/all")
     private List<Card> getAllCards(){
-        return cardRepository.findAll();
+        List<Card> karty = cardRepository.findAll();
+        Card kartaToDo = cardRepository.findByName("To do").orElseGet(() -> cardRepository.save(new Card("To do")));
+        Card kartaDone = cardRepository.findByName("Done").orElseGet(() -> cardRepository.save(new Card("Done")));
+        List<Card> pomocniczaLista = new ArrayList<>();
+        pomocniczaLista.add(kartaToDo);
+        for (Card card : karty) {
+            if (!card.getName().equals("To do") && !card.getName().equals("Done")) {
+                pomocniczaLista.add(card);
+            }
+        }
+        pomocniczaLista.add(kartaDone);
+
+        return pomocniczaLista;
     }
     @PostMapping("/add")
     private Card addCard(@RequestBody Card card){
+        if (card.getName().equalsIgnoreCase("to do") || card.getName().equalsIgnoreCase("done")) {
+            throw new UnsupportedOperationException("Nie można dodać karty o nazwie: " + card.getName());
+        }
         return cardRepository.save(card);
     }
     @PutMapping("/addtask/{id}")
@@ -43,8 +59,6 @@ public class CardController {
         tasks.add(newTask);
         card.setTasks(tasks);
         return cardRepository.save(card);
-
-
     }
     @DeleteMapping("/{cardId}/task/{taskId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -55,21 +69,8 @@ public class CardController {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zadania numer: " + taskId));
 
-        if (card.getName().equals("To do") || (card.getName().equals("Done"))) {
-            throw new UnsupportedOperationException("Nie można usunąć tej karty.");
-        }
 
         card.getTasks().remove(task);
         cardRepository.save(card);
     }
-    @PostMapping("/init")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void initializeColumns() {
-        Card todo = new Card("To do");
-        Card done = new Card("Done");
-
-        cardRepository.save(todo);
-        cardRepository.save(done);
-    }
 }
-
