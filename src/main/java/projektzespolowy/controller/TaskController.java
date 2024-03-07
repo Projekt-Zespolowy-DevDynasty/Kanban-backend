@@ -3,7 +3,9 @@ package projektzespolowy.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import projektzespolowy.models.Card;
 import projektzespolowy.models.Task;
+import projektzespolowy.repository.CardRepository;
 import projektzespolowy.repository.TaskRepository;
 import projektzespolowy.wyjatki.ResourceNotFoundException;
 
@@ -11,36 +13,27 @@ import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
-@RequestMapping("/api/tasks")
+@RequestMapping("/api")
 public class TaskController {
 
     @Autowired
     private TaskRepository taskRepository;
 
-    @GetMapping
+    @Autowired
+    private CardRepository cardRepository;
+
+    @GetMapping("/tasks")
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
     }
 
-    @PostMapping
+    @PostMapping("/tasks")
     @ResponseStatus(HttpStatus.CREATED)
     public Task createTask(@RequestBody Task task) {
         return taskRepository.save(task);
     }
 
-//    @PutMapping("/{id}")
-//    public Task updateTask(@PathVariable Long id, @RequestBody Task taskDetails) {
-//        Task task = taskRepository.findById(id)
-//                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zadania numer: " + id));
-//
-//        task.setTitle(taskDetails.getTitle());
-//        task.setDescription(taskDetails.getDescription());
-//        task.setStatus(taskDetails.getStatus());
-//
-//        return taskRepository.save(task);
-//    }
-
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/tasks/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTask(@PathVariable Long id) {
         Task task = taskRepository.findById(id)
@@ -48,6 +41,25 @@ public class TaskController {
 
         taskRepository.delete(task);
     }
-}
 
+    @GetMapping("/cards")
+    public List<Card> getAllCards() {
+        return cardRepository.findAll();
+    }
+
+    @PostMapping("/cards")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Card createCard(@RequestBody Card card) {
+        return cardRepository.save(card);
+    }
+
+    @DeleteMapping("/cards/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCard(@PathVariable Long id) {
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + id));
+
+        cardRepository.delete(card);
+    }
+}
 
