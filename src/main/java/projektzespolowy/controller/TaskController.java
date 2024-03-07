@@ -57,3 +57,4 @@ public class TaskController {
         cardRepository.delete(card);
     }
 }
+//Truskawka
