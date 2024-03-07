@@ -55,8 +55,21 @@ public class CardController {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zadania numer: " + taskId));
 
+        if (card.getName().equals("To do") || (card.getName().equals("Done"))) {
+            throw new UnsupportedOperationException("Nie można usunąć tej karty.");
+        }
+
         card.getTasks().remove(task);
         cardRepository.save(card);
+    }
+    @PostMapping("/init")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void initializeColumns() {
+        Card todo = new Card("To do");
+        Card done = new Card("Done");
+
+        cardRepository.save(todo);
+        cardRepository.save(done);
     }
 }
 

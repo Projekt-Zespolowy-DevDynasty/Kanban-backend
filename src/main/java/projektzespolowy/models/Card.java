@@ -23,4 +23,7 @@ public class Card {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Task> tasks;
+    public Card(String name) {
+        this.name = name;
+    }
 }
