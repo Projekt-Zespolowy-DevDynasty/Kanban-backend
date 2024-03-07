@@ -1,11 +1,13 @@
 package projektzespolowy.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import projektzespolowy.models.Card;
 import projektzespolowy.models.Task;
 import projektzespolowy.repository.CardRepository;
 import projektzespolowy.repository.TaskRepository;
+import projektzespolowy.wyjatki.ResourceNotFoundException;
 
 import java.util.List;
 
@@ -41,5 +43,20 @@ public class CardController {
         tasks.add(newTask);
         card.setTasks(tasks);
         return cardRepository.save(card);
+
+
+    }
+    @DeleteMapping("/{cardId}/task/{taskId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteTaskFromCard(@PathVariable Long cardId, @PathVariable Long taskId) {
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + cardId));
+
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zadania numer: " + taskId));
+
+        card.getTasks().remove(task);
+        cardRepository.save(card);
     }
 }
+

@@ -33,14 +33,8 @@ public class TaskController {
         return taskRepository.save(task);
     }
 
-    @DeleteMapping("/tasks/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteTask(@PathVariable Long id) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zadania numer: " + id));
 
-        taskRepository.delete(task);
-    }
+
 
     @GetMapping("/cards")
     public List<Card> getAllCards() {
@@ -56,10 +50,10 @@ public class TaskController {
     @DeleteMapping("/cards/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCard(@PathVariable Long id) {
-        Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + id));
+
+
+        Card card = cardRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + id));
 
         cardRepository.delete(card);
     }
 }
-
