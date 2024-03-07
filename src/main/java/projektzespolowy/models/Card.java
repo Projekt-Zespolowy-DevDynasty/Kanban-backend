@@ -21,6 +21,6 @@ public class Card {
     private Long id;
     private String name;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "card")
     private List<Task> tasks;
 }
