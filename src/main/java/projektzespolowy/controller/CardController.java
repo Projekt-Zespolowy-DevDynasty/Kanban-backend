@@ -27,7 +27,7 @@ public class CardController {
     }
 
     @GetMapping("/all")
-    private List<Card> getAllCards(){
+    private List<Card> getAllCards() {
         List<Card> karty = cardRepository.findAll();
         Card kartaToDo = cardRepository.findByName("To do").orElseGet(() -> cardRepository.save(new Card("To do")));
         Card kartaDone = cardRepository.findByName("Done").orElseGet(() -> cardRepository.save(new Card("Done")));
@@ -42,13 +42,15 @@ public class CardController {
 
         return pomocniczaLista;
     }
+
     @PostMapping("/add")
-    private Card addCard(@RequestBody Card card){
+    private Card addCard(@RequestBody Card card) {
         if (card.getName().equalsIgnoreCase("to do") || card.getName().equalsIgnoreCase("done")) {
             throw new UnsupportedOperationException("Nie można dodać karty o nazwie: " + card.getName());
         }
         return cardRepository.save(card);
     }
+
     @PutMapping("/addtask/{id}")
     private Card addTask(@RequestBody String taskName, @PathVariable Long id) {
         Card card = cardRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Nie znaleziono karty o podanym ID: " + id));
@@ -60,6 +62,7 @@ public class CardController {
         card.setTasks(tasks);
         return cardRepository.save(card);
     }
+
     @DeleteMapping("/{cardId}/task/{taskId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTaskFromCard(@PathVariable Long cardId, @PathVariable Long taskId) {
@@ -73,4 +76,23 @@ public class CardController {
         card.getTasks().remove(task);
         cardRepository.save(card);
     }
+
+    @PutMapping("/{sourceCardId}/move-task/{taskId}/to-card/{destinationCardId}")
+    private void moveTaskToAnotherCard(@PathVariable Long sourceCardId, @PathVariable Long taskId, @PathVariable Long destinationCardId) {
+
+        Card sourceCard = cardRepository.findById(sourceCardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + sourceCardId));
+        Card destinationCard = cardRepository.findById(destinationCardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + destinationCardId));
+
+        Task taskToMove = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zadania numer: " + taskId));
+
+        sourceCard.getTasks().remove(taskToMove);
+        destinationCard.getTasks().add(taskToMove);
+
+        cardRepository.save(sourceCard);
+        cardRepository.save(destinationCard);
+    }
+
 }
