@@ -27,11 +27,7 @@ public class TaskController {
         return taskRepository.findAll();
     }
 
-    @PostMapping("/tasks")
-    @ResponseStatus(HttpStatus.CREATED)
-    public Task createTask(@RequestBody Task task) {
-        return taskRepository.save(task);
-    }
+
 
 
 
@@ -44,6 +40,8 @@ public class TaskController {
     @PostMapping("/cards")
     @ResponseStatus(HttpStatus.CREATED)
     public Card createCard(@RequestBody Card card) {
+        card.setMaxTasksLimit(5);
+        card.setTaskNumber(0);
         return cardRepository.save(card);
     }
 
@@ -52,9 +50,9 @@ public class TaskController {
     public void deleteCard(@PathVariable Long id) {
 
         Card card = cardRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + id));
-//        if (card.getName().equals("To do") || (card.getName().equals("Done"))) {
-//            throw new UnsupportedOperationException("Nie można usunąć tej karty.");
-//        }
+       if (card.getName().equals("To do") || (card.getName().equals("Done"))) {
+            throw new UnsupportedOperationException("Nie można usunąć tej karty.");
+        }
         cardRepository.delete(card);
     }
 }
