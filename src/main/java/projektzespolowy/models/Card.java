@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @NoArgsConstructor
@@ -20,9 +19,11 @@ public class Card {
     @Column(name = "id", nullable = false)
     private Long id;
     private String name;
-
+    private int maxTasksLimit;
+    private int TaskNumber;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Task> tasks;
+
     public Card(String name) {
         this.name = name;
     }
