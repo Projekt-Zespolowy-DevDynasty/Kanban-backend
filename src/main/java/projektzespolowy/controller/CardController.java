@@ -48,11 +48,19 @@ public class CardController {
         if (card.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Nazwa karty nie może być pusta ani składać się wyłącznie z białych znaków.");
         }
-        if (card.getName().equalsIgnoreCase("to do") || card.getName().equalsIgnoreCase("done")) {
-            throw new UnsupportedOperationException("Nie można dodać karty o nazwie: " + card.getName());
+
+        if (card.getName().equalsIgnoreCase("To do")) {
+            card.setMaxTasksLimit(15);
+        } else if (card.getName().equalsIgnoreCase("Done")) {
+            card.setMaxTasksLimit(Integer.MAX_VALUE);
+        } else {
+            card.setMaxTasksLimit(5);
         }
+
         return cardRepository.save(card);
     }
+
+
 
 
     @PutMapping("/addtask/{id}")
