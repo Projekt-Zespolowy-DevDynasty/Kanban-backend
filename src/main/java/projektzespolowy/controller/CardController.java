@@ -26,6 +26,10 @@ public class CardController {
         this.taskRepository = taskRepository;
     }
 
+    @GetMapping("/{id}")
+    private Card getCard(@PathVariable Long id) {
+        return cardRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o podanym ID: " + id));
+    }
     @GetMapping("/all")
     private List<Card> getAllCards() {
         List<Card> karty = cardRepository.findAll();

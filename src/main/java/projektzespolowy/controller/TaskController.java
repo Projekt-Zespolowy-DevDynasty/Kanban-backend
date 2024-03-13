@@ -31,7 +31,6 @@ public class TaskController {
 
 
 
-
     @GetMapping("/cards")
     public List<Card> getAllCards() {
         return cardRepository.findAll();
