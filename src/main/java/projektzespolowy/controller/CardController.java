@@ -57,9 +57,9 @@ public class CardController {
         }
 
         if (card.getName().equalsIgnoreCase("To do")) {
-            card.setMaxTasksLimit(15);
+            card.setMaxTasksLimit(Integer.MAX_VALUE);
         } else if (card.getName().equalsIgnoreCase("Done")) {
-            card.setMaxTasksLimit(100);
+            card.setMaxTasksLimit(Integer.MAX_VALUE);
         } else {
             card.setMaxTasksLimit(5);
         }
