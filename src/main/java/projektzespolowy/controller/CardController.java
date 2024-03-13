@@ -2,12 +2,15 @@ package projektzespolowy.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import projektzespolowy.models.Card;
 import projektzespolowy.models.Task;
 import projektzespolowy.repository.CardRepository;
 import projektzespolowy.repository.TaskRepository;
 import projektzespolowy.wyjatki.ResourceNotFoundException;
+
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +59,7 @@ public class CardController {
         if (card.getName().equalsIgnoreCase("To do")) {
             card.setMaxTasksLimit(15);
         } else if (card.getName().equalsIgnoreCase("Done")) {
-            card.setMaxTasksLimit(Integer.MAX_VALUE);
+            card.setMaxTasksLimit(100);
         } else {
             card.setMaxTasksLimit(5);
         }
@@ -112,6 +115,16 @@ public class CardController {
 
         cardRepository.save(sourceCard);
         cardRepository.save(destinationCard);
+    }
+    @PutMapping("/{id}/maxTasksLimit")
+    public ResponseEntity<String> updateMaxTasksLimit(@PathVariable Long id, @RequestParam(name="MaxLimit") int maxTasksLimit) {
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o podanym ID: " + id));
+
+        card.setMaxTasksLimit(maxTasksLimit);
+        cardRepository.save(card);
+
+        return ResponseEntity.ok("Maksymalna ilość zadań na karcie została zaktualizowana.");
     }
 
 }
