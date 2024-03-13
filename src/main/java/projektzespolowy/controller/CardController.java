@@ -117,14 +117,12 @@ public class CardController {
         cardRepository.save(destinationCard);
     }
     @PutMapping("/{id}/maxTasksLimit")
-    public ResponseEntity<String> updateMaxTasksLimit(@PathVariable Long id, @RequestParam(name="MaxLimit") int maxTasksLimit) {
+    public void updateMaxTasksLimit(@PathVariable Long id, @RequestBody int maxTasksLimit) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o podanym ID: " + id));
 
         card.setMaxTasksLimit(maxTasksLimit);
         cardRepository.save(card);
-
-        return ResponseEntity.ok("Maksymalna ilość zadań na karcie została zaktualizowana.");
     }
 
 }
