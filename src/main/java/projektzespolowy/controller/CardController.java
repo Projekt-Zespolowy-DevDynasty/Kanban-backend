@@ -55,15 +55,7 @@ public class CardController {
         if (card.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Nazwa karty nie może być pusta ani składać się wyłącznie z białych znaków.");
         }
-
-        if (card.getName().equalsIgnoreCase("To do")) {
-            card.setMaxTasksLimit(Integer.MAX_VALUE);
-        } else if (card.getName().equalsIgnoreCase("Done")) {
-            card.setMaxTasksLimit(Integer.MAX_VALUE);
-        } else {
-            card.setMaxTasksLimit(5);
-        }
-
+        card.setMaxTasksLimit(5);
         return cardRepository.save(card);
     }
 
