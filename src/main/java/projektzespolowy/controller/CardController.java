@@ -36,8 +36,8 @@ public class CardController {
     @GetMapping("/all")
     private List<Card> getAllCards() {
         List<Card> karty = cardRepository.findAll();
-        Card kartaToDo = cardRepository.findByName("To do").orElseGet(() -> cardRepository.save(new Card("To do")));
-        Card kartaDone = cardRepository.findByName("Done").orElseGet(() -> cardRepository.save(new Card("Done")));
+        Card kartaToDo = cardRepository.findByName("To do").orElseGet(() -> cardRepository.save(new Card("To do", Integer.MAX_VALUE)));
+        Card kartaDone = cardRepository.findByName("Done").orElseGet(() -> cardRepository.save(new Card("Done", Integer.MAX_VALUE)));
         List<Card> pomocniczaLista = new ArrayList<>();
         pomocniczaLista.add(kartaToDo);
         for (Card card : karty) {
