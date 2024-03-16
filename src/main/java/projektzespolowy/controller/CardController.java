@@ -13,7 +13,9 @@ import projektzespolowy.wyjatki.ResourceNotFoundException;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -136,18 +138,22 @@ public class CardController {
         cardRepository.delete(cardToDelete);
     }
     @PutMapping("/{id}/edit-name")
-    public ResponseEntity<String> editColumnName(@PathVariable Long id, @RequestBody String newName) {
+    public ResponseEntity<Map<String, String>> editColumnName(@PathVariable Long id, @RequestBody String newName) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o podanym ID: " + id));
 
-        if (newName.trim().isEmpty() || newName.equals("To do") || newName.equals("Done")) {
-            throw new IllegalArgumentException("Nowa nazwa kolumny nie może być pusta ani składać się wyłącznie z białych znaków.");
-        }
+//        if (newName.trim().isEmpty() || newName.equals("To do") || newName.equals("Done")) {
+//            return ResponseEntity.badRequest().body("Nowa nazwa kolumny nie może być pusta ani składać się wyłącznie z białych znaków.");
+//            throw new IllegalArgumentException("Nowa nazwa kolumny nie może być pusta ani składać się wyłącznie z białych znaków.");
+//        }
 
         card.setName(newName);
         cardRepository.save(card);
 
-        return ResponseEntity.ok("Nazwa kolumny została pomyślnie zaktualizowana.");
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Nazwa kolumny została pomyślnie zaktualizowana.");
+
+        return ResponseEntity.ok(response);
     }
 
 
