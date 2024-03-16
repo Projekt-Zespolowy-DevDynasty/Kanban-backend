@@ -140,7 +140,7 @@ public class CardController {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o podanym ID: " + id));
 
-        if (newName.trim().isEmpty()) {
+        if (newName.trim().isEmpty() || newName.equals("To do") || newName.equals("Done")) {
             throw new IllegalArgumentException("Nowa nazwa kolumny nie może być pusta ani składać się wyłącznie z białych znaków.");
         }
 
