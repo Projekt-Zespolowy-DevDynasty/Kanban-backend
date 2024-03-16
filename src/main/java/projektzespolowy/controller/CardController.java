@@ -54,6 +54,9 @@ public class CardController {
 
     @PostMapping("/add")
     private Card addCard(@RequestBody Card card) {
+        if(card.getName().equals("To do") || card.getName().equals("Done")){
+            throw new UnsupportedOperationException("Nie można dodać karty o nazwie: " + card.getName());
+        }
         if (card.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Nazwa karty nie może być pusta ani składać się wyłącznie z białych znaków.");
         }
@@ -142,10 +145,11 @@ public class CardController {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o podanym ID: " + id));
 
-//        if (newName.trim().isEmpty() || newName.equals("To do") || newName.equals("Done")) {
-//            return ResponseEntity.badRequest().body("Nowa nazwa kolumny nie może być pusta ani składać się wyłącznie z białych znaków.");
-//            throw new IllegalArgumentException("Nowa nazwa kolumny nie może być pusta ani składać się wyłącznie z białych znaków.");
-//        }
+        if (newName.trim().isEmpty() || newName.equals("To do") || newName.equals("Done")) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Nazwa kolumny nie może być pusta ani składać się wyłącznie z białych znaków.");
+            return ResponseEntity.badRequest().body(response);
+        }
 
         card.setName(newName);
         cardRepository.save(card);
