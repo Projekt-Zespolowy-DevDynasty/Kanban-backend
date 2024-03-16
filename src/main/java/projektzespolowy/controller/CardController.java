@@ -36,8 +36,8 @@ public class CardController {
     @GetMapping("/all")
     private List<Card> getAllCards() {
         List<Card> karty = cardRepository.findAll();
-        Card kartaToDo = cardRepository.findByName("To do").orElseGet(() -> cardRepository.save(new Card("To do")));
-        Card kartaDone = cardRepository.findByName("Done").orElseGet(() -> cardRepository.save(new Card("Done")));
+        Card kartaToDo = cardRepository.findByName("To do").orElseGet(() -> cardRepository.save(new Card("To do", Integer.MAX_VALUE)));
+        Card kartaDone = cardRepository.findByName("Done").orElseGet(() -> cardRepository.save(new Card("Done", Integer.MAX_VALUE)));
         List<Card> pomocniczaLista = new ArrayList<>();
         pomocniczaLista.add(kartaToDo);
         for (Card card : karty) {
@@ -55,15 +55,7 @@ public class CardController {
         if (card.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Nazwa karty nie może być pusta ani składać się wyłącznie z białych znaków.");
         }
-
-        if (card.getName().equalsIgnoreCase("To do")) {
-            card.setMaxTasksLimit(Integer.MAX_VALUE);
-        } else if (card.getName().equalsIgnoreCase("Done")) {
-            card.setMaxTasksLimit(Integer.MAX_VALUE);
-        } else {
-            card.setMaxTasksLimit(5);
-        }
-
+        card.setMaxTasksLimit(5);
         return cardRepository.save(card);
     }
 

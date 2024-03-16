@@ -24,8 +24,9 @@ public class Card {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Task> tasks;
 
-    public Card(String name) {
+    public Card(String name, int maxTasksLimit) {
         this.name = name;
+        this.maxTasksLimit = maxTasksLimit;
     }
 
 }
