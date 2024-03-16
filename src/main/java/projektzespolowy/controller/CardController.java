@@ -124,5 +124,39 @@ public class CardController {
         card.setMaxTasksLimit(maxTasksLimit);
         cardRepository.save(card);
     }
+    @DeleteMapping("/{cardId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCardAndMoveTasks(@PathVariable Long cardId) {
+        Card cardToDelete = cardRepository.findById(cardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + cardId));
+
+
+        Card leftCard = cardRepository.findFirstByIdLessThanOrderByIdDesc(cardId);
+
+        if (leftCard != null) {
+
+            List<Task> tasksToMove = cardToDelete.getTasks();
+            leftCard.getTasks().addAll(tasksToMove);
+            cardRepository.save(leftCard);
+        }
+
+
+        cardRepository.delete(cardToDelete);
+    }
+    @PutMapping("/{id}/edit-name")
+    public ResponseEntity<String> editColumnName(@PathVariable Long id, @RequestBody String newName) {
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o podanym ID: " + id));
+
+        if (newName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nowa nazwa kolumny nie może być pusta ani składać się wyłącznie z białych znaków.");
+        }
+
+        card.setName(newName);
+        cardRepository.save(card);
+
+        return ResponseEntity.ok("Nazwa kolumny została pomyślnie zaktualizowana.");
+    }
+
 
 }
