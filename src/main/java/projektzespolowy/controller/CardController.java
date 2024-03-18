@@ -11,11 +11,7 @@ import projektzespolowy.repository.TaskRepository;
 import projektzespolowy.wyjatki.ResourceNotFoundException;
 
 
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -38,8 +34,9 @@ public class CardController {
     @GetMapping("/all")
     private List<Card> getAllCards() {
         List<Card> karty = cardRepository.findAll();
-        Card kartaToDo = cardRepository.findByName("To do").orElseGet(() -> cardRepository.save(new Card("To do", Integer.MAX_VALUE)));
-        Card kartaDone = cardRepository.findByName("Done").orElseGet(() -> cardRepository.save(new Card("Done", Integer.MAX_VALUE)));
+        Card kartaToDo = cardRepository.findByName("To do").orElseGet(() -> cardRepository.save(new Card("To do", Integer.MAX_VALUE, 0)));
+        Card kartaDone = cardRepository.findByName("Done").orElseGet(() -> cardRepository.save(new Card("Done", Integer.MAX_VALUE, Integer.MAX_VALUE)));
+
         List<Card> pomocniczaLista = new ArrayList<>();
         pomocniczaLista.add(kartaToDo);
         for (Card card : karty) {
@@ -48,6 +45,9 @@ public class CardController {
             }
         }
         pomocniczaLista.add(kartaDone);
+
+
+        pomocniczaLista.sort(Comparator.comparingInt(Card::getPosition));
 
         return pomocniczaLista;
     }
@@ -158,6 +158,21 @@ public class CardController {
         response.put("message", "Nazwa kolumny została pomyślnie zaktualizowana.");
 
         return ResponseEntity.ok(response);
+    }
+    @PutMapping("/{id}/position")
+    public void updateCardPosition(@PathVariable Long id, @RequestBody int position) {
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o podanym ID: " + id));
+
+        card.setPosition(position);
+        cardRepository.save(card);
+
+
+        List<Card> cards = cardRepository.findAll();
+        for (int i = 0; i < cards.size(); i++) {
+            cards.get(i).setPosition(i);
+        }
+        cardRepository.saveAll(cards);
     }
 
 

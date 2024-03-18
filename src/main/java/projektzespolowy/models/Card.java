@@ -20,13 +20,16 @@ public class Card {
     private Long id;
     private String name;
     private int maxTasksLimit;
-    private int TaskNumber;
+    private int taskNumber;
+    private int position; // Nowe pole reprezentujące pozycję kolumny
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Task> tasks;
 
-    public Card(String name, int maxTasksLimit) {
+    public Card(String name, int maxTasksLimit, int position) {
         this.name = name;
         this.maxTasksLimit = maxTasksLimit;
+        this.position = position;
     }
 
 }
