@@ -13,5 +13,7 @@ public interface CardRepository extends JpaRepository<Card, Long> {
 
     Card findFirstByIdLessThanOrderByIdDesc(Long cardId);
 
+    Card findFirstByPositionLessThanOrderByIdDesc(int position);
+
     ;
 }

@@ -21,7 +21,7 @@ public class Card {
     private String name;
     private int maxTasksLimit;
     private int taskNumber;
-    private int position; // Nowe pole reprezentujące pozycję kolumny
+    private int position;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Task> tasks;

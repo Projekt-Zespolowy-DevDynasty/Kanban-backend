@@ -35,7 +35,7 @@ public class CardController {
     private List<Card> getAllCards() {
         List<Card> karty = cardRepository.findAll();
         Card kartaToDo = cardRepository.findByName("To do").orElseGet(() -> cardRepository.save(new Card("To do", Integer.MAX_VALUE, 0)));
-        Card kartaDone = cardRepository.findByName("Done").orElseGet(() -> cardRepository.save(new Card("Done", Integer.MAX_VALUE, Integer.MAX_VALUE)));
+        Card kartaDone = cardRepository.findByName("Done").orElseGet(() -> cardRepository.save(new Card("Done", Integer.MAX_VALUE, 1)));
 
         List<Card> pomocniczaLista = new ArrayList<>();
         pomocniczaLista.add(kartaToDo);
@@ -60,9 +60,22 @@ public class CardController {
         if (card.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Nazwa karty nie może być pusta ani składać się wyłącznie z białych znaków.");
         }
+        List<Card> cards = cardRepository.findAll();
+        // get Done card from cards
+        Card doneCard2 = cards.stream()
+                .filter(c -> c.getName().equals("Done"))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o nazwie: Done"));
+        Card doneCard = cardRepository.findById(doneCard2.getId()).orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o nazwie: Done"));
+        card.setPosition(doneCard.getPosition());
+        cardRepository.save(card);
+        doneCard.setPosition(doneCard.getPosition() + 1);
+
         card.setMaxTasksLimit(5);
         return cardRepository.save(card);
     }
+
+
 
 
 
