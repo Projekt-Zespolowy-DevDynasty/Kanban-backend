@@ -69,7 +69,7 @@ public class CardController {
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o nazwie: Done"));
         Card doneCard = cardRepository.findById(doneCard2.getId()).orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o nazwie: Done"));
         card.setPosition(doneCard.getPosition());
-        cardRepository.save(card);
+        cardRepository.save(doneCard);
         doneCard.setPosition(doneCard.getPosition() + 1);
 
         card.setMaxTasksLimit(5);
@@ -139,7 +139,6 @@ public class CardController {
 
     @DeleteMapping("/{cardId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Transactional
     public void deleteCardAndMoveTasks(@PathVariable Long cardId) {
         Card cardToDelete = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + cardId));
@@ -149,17 +148,24 @@ public class CardController {
             throw new UnsupportedOperationException("Nie można usunąć tej karty.");
         }
 
-        Card leftCard = cardRepository.findFirstByIdLessThanOrderByIdDesc(cardId);
+        Card leftCard = cardRepository.findByPosition(position - 1)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o pozycji: " + (position - 1)));
 
         List<Card> cards = cardRepository.findAllByPositionGreaterThan(position);
         for (Card card : cards) {
             card.setPosition(card.getPosition() - 1);
+            cardRepository.save(card);
         }
-        cardRepository.saveAll(cards);
+// TODO: przy usuwaniu kolumny taski nie przechodza do innej kolumny
+        // move tasks from cardToDelete to leftCard without duplicates
+//        List<Task> tasks = cardToDelete.getTasks();
+//        for (Task task : tasks) {
+//            Task newTask = new Task();
+//            newTask.setName(task.getName());
+//            taskRepository.save(newTask);
+//            leftCard.getTasks().add(newTask);
+//        }
 
-        List<Task> taskList = cardToDelete.getTasks();
-        taskList.addAll(leftCard.getTasks());
-        leftCard.setTasks(taskList);
 
         cardRepository.save(leftCard);
         cardRepository.delete(cardToDelete);
@@ -184,20 +190,21 @@ public class CardController {
 
         return ResponseEntity.ok(response);
     }
-    @PutMapping("/{id}/position")
-    public void updateCardPosition(@PathVariable Long id, @RequestBody int position) {
-        Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o podanym ID: " + id));
+    @PutMapping("/{destinationId}/position/{sourceId}")
+    public void updateCardPosition(@PathVariable Long destinationId, @PathVariable Long sourceId)  {
+        Card destinationCard = cardRepository.findById(destinationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o podanym ID: " + destinationId));
+        Card sourceCard = cardRepository.findById(sourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o podanym ID: " + sourceId));
+        // find all cards greater than destinationCard position and less or equal than sourceCard position
+        List<Card> cards = cardRepository.findAllByPositionGreaterThanAndPositionLessThan(destinationCard.getPosition(), sourceCard.getPosition());
 
-        card.setPosition(position);
-        cardRepository.save(card);
-
-
-        List<Card> cards = cardRepository.findAll();
-        for (int i = 0; i < cards.size(); i++) {
-            cards.get(i).setPosition(i);
+        for (Card card : cards) {
+            card.setPosition(card.getPosition() + 1);
+            cardRepository.save(card);
         }
-        cardRepository.saveAll(cards);
+        sourceCard.setPosition(destinationCard.getPosition() + 1);
+        cardRepository.save(sourceCard);
     }
 
 
