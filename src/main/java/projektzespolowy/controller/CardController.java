@@ -36,7 +36,7 @@ public class CardController {
     private List<Card> getAllCards() {
         List<Card> karty = cardRepository.findAll();
         Card kartaToDo = cardRepository.findByName("To do").orElseGet(() -> cardRepository.save(new Card("To do", Integer.MAX_VALUE, 0)));
-        Card kartaDone = cardRepository.findByName("Done").orElseGet(() -> cardRepository.save(new Card("Done", Integer.MAX_VALUE, Integer.MAX_VALUE)));
+        Card kartaDone = cardRepository.findByName("Done").orElseGet(() -> cardRepository.save(new Card("Done", Integer.MAX_VALUE, 1)));
 
         List<Card> pomocniczaLista = new ArrayList<>();
         pomocniczaLista.add(kartaToDo);
@@ -68,7 +68,6 @@ public class CardController {
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o nazwie: Done"));
         Card doneCard = cardRepository.findById(doneCard2.getId()).orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o nazwie: Done"));
-
         card.setPosition(doneCard.getPosition());
         cardRepository.save(card);
         doneCard.setPosition(doneCard.getPosition() + 1);
@@ -76,6 +75,8 @@ public class CardController {
         card.setMaxTasksLimit(5);
         return cardRepository.save(card);
     }
+
+
 
 
 
@@ -148,8 +149,7 @@ public class CardController {
             throw new UnsupportedOperationException("Nie można usunąć tej karty.");
         }
 
-        Card leftCard = cardRepository.findByPosition(position - 1)
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o pozycji: " + (position - 1)));
+        Card leftCard = cardRepository.findFirstByIdLessThanOrderByIdDesc(cardId);
 
         List<Card> cards = cardRepository.findAllByPositionGreaterThan(position);
         for (Card card : cards) {
