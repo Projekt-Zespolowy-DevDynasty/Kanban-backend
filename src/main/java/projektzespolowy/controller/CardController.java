@@ -1,5 +1,6 @@
 package projektzespolowy.controller;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,6 +61,18 @@ public class CardController {
         if (card.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Nazwa karty nie może być pusta ani składać się wyłącznie z białych znaków.");
         }
+        List<Card> cards = cardRepository.findAll();
+        // get Done card from cards
+        Card doneCard2 = cards.stream()
+                .filter(c -> c.getName().equals("Done"))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o nazwie: Done"));
+        Card doneCard = cardRepository.findById(doneCard2.getId()).orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o nazwie: Done"));
+
+        card.setPosition(doneCard.getPosition());
+        cardRepository.save(card);
+        doneCard.setPosition(doneCard.getPosition() + 1);
+
         card.setMaxTasksLimit(5);
         return cardRepository.save(card);
     }
@@ -121,25 +134,37 @@ public class CardController {
         card.setMaxTasksLimit(maxTasksLimit);
         cardRepository.save(card);
     }
+
+
     @DeleteMapping("/{cardId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Transactional
     public void deleteCardAndMoveTasks(@PathVariable Long cardId) {
         Card cardToDelete = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + cardId));
 
-
-        Card leftCard = cardRepository.findFirstByIdLessThanOrderByIdDesc(cardId);
-
-        if (leftCard != null) {
-
-            List<Task> tasksToMove = cardToDelete.getTasks();
-            leftCard.getTasks().addAll(tasksToMove);
-            cardRepository.save(leftCard);
+        int position = cardToDelete.getPosition();
+        if (cardToDelete.getName().equals("To do") || cardToDelete.getName().equals("Done")) {
+            throw new UnsupportedOperationException("Nie można usunąć tej karty.");
         }
 
+        Card leftCard = cardRepository.findByPosition(position - 1)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o pozycji: " + (position - 1)));
 
+        List<Card> cards = cardRepository.findAllByPositionGreaterThan(position);
+        for (Card card : cards) {
+            card.setPosition(card.getPosition() - 1);
+        }
+        cardRepository.saveAll(cards);
+
+        List<Task> taskList = cardToDelete.getTasks();
+        taskList.addAll(leftCard.getTasks());
+        leftCard.setTasks(taskList);
+
+        cardRepository.save(leftCard);
         cardRepository.delete(cardToDelete);
     }
+
     @PutMapping("/{id}/edit-name")
     public ResponseEntity<Map<String, String>> editColumnName(@PathVariable Long id, @RequestBody String newName) {
         Card card = cardRepository.findById(id)
