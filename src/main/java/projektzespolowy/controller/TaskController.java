@@ -31,32 +31,6 @@ public class TaskController {
     }
 
 
-
-
-
-    @GetMapping("/cards")
-    public List<Card> getAllCards() {
-        return cardRepository.findAll();
-    }
-
-    @PostMapping("/cards")
-    @ResponseStatus(HttpStatus.CREATED)
-    public Card createCard(@RequestBody Card card) {
-        card.setMaxTasksLimit(5);
-        card.setTaskNumber(0);
-        return cardRepository.save(card);
-    }
-
-    @DeleteMapping("/cards/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCard(@PathVariable Long id) {
-
-        Card card = cardRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + id));
-       if (card.getName().equals("To do") || (card.getName().equals("Done"))) {
-            throw new UnsupportedOperationException("Nie można usunąć tej karty.");
-        }
-        cardRepository.delete(card);
-    }
     @PutMapping("/task/{taskId}/rename")
     public ResponseEntity<Map<String, String>> renameTask(@PathVariable Long taskId, @RequestBody String newName) {
         Task task = taskRepository.findById(taskId)
