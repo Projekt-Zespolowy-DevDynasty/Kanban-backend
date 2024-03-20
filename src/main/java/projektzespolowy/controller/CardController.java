@@ -192,36 +192,38 @@ public class CardController {
 
         return ResponseEntity.ok(response);
     }
+    @PutMapping("/{destinationId}/position/{sourceId}")
     public void updateCardPosition(@PathVariable Long destinationId, @PathVariable Long sourceId) {
         Card destinationCard = cardRepository.findById(destinationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o podanym ID: " + destinationId));
         Card sourceCard = cardRepository.findById(sourceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o podanym ID: " + sourceId));
+        int destinationPostion = destinationCard.getPosition();
+        int sourcePosition = sourceCard.getPosition();
 
-        if (destinationCard.getPosition() < sourceCard.getPosition()) {
-
-            List<Card> cards = cardRepository.findAllByPositionGreaterThanAndPositionLessThan(
-                    destinationCard.getPosition(), sourceCard.getPosition());
+        if (destinationPostion < sourcePosition) {
+            List<Card> cards = cardRepository.findAllByPositionGreaterThanAndPositionLessThan(destinationCard.getPosition(), sourceCard.getPosition());
 
             for (Card card : cards) {
                 card.setPosition(card.getPosition() + 1);
                 cardRepository.save(card);
             }
-        } else if (destinationCard.getPosition() > sourceCard.getPosition()) {
+            sourceCard.setPosition(destinationCard.getPosition() + 1);
+            cardRepository.save(sourceCard);
 
-            List<Card> cards = cardRepository.findAllByPositionGreaterThanEqualAndPositionLessThan(
-                    sourceCard.getPosition(), destinationCard.getPosition());
+        } else if (destinationCard.getPosition() > sourceCard.getPosition()) {
+            List<Card> cards = cardRepository.findAllByPositionGreaterThanEqualAndPositionLessThan(sourceCard.getPosition(), destinationCard.getPosition());
 
             for (Card card : cards) {
                 card.setPosition(card.getPosition() - 1);
                 cardRepository.save(card);
             }
+            sourceCard.setPosition(destinationCard.getPosition());
+            cardRepository.save(sourceCard);
+            destinationCard.setPosition(destinationCard.getPosition() - 1);
+            cardRepository.save(destinationCard);
+
+
         }
-
-
-        sourceCard.setPosition(destinationCard.getPosition());
-        cardRepository.save(sourceCard);
     }
-
-
 }
