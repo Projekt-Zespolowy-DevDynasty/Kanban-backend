@@ -18,4 +18,6 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     List<Card> findAllByPositionGreaterThan(int position);
 
     List<Card> findAllByPositionGreaterThanAndPositionLessThan(int position, int position1);
+
+    List<Card> findAllByPositionGreaterThanEqualAndPositionLessThan(int position, int position1);
 }
