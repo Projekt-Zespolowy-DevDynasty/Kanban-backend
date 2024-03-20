@@ -156,15 +156,17 @@ public class CardController {
             card.setPosition(card.getPosition() - 1);
             cardRepository.save(card);
         }
-// TODO: przy usuwaniu kolumny taski nie przechodza do innej kolumny
-        // move tasks from cardToDelete to leftCard without duplicates
-//        List<Task> tasks = cardToDelete.getTasks();
-//        for (Task task : tasks) {
-//            Task newTask = new Task();
-//            newTask.setName(task.getName());
-//            taskRepository.save(newTask);
-//            leftCard.getTasks().add(newTask);
-//        }
+        // TODO: nie tworzyc nowych obiektow, tylko przypisac do nowej karty te same zadania
+        List<Task> tasks = new ArrayList<>();
+
+        for (Task task : cardToDelete.getTasks()) {
+            Task newTask = new Task();
+            newTask.setName(task.getName());
+            taskRepository.save(newTask);
+            tasks.add(newTask);
+        }
+        List<Task> leftCardTasks = leftCard.getTasks();
+        leftCardTasks.addAll(tasks);
 
 
         cardRepository.save(leftCard);
