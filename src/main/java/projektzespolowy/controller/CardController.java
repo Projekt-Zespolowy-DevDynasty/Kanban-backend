@@ -1,6 +1,5 @@
 package projektzespolowy.controller;
 
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +8,7 @@ import projektzespolowy.models.Card;
 import projektzespolowy.models.Task;
 import projektzespolowy.repository.CardRepository;
 import projektzespolowy.repository.TaskRepository;
+import projektzespolowy.service.CardServiceImpl;
 import projektzespolowy.wyjatki.ResourceNotFoundException;
 
 
@@ -20,10 +20,13 @@ import java.util.*;
 public class CardController {
     private CardRepository cardRepository;
     private final TaskRepository taskRepository;
+    private CardServiceImpl cardService;
 
     @Autowired
     public CardController(CardRepository cardRepository,
-                          TaskRepository taskRepository) {
+                          TaskRepository taskRepository,
+                          CardServiceImpl cardService) {
+        this.cardService = cardService;
         this.cardRepository = cardRepository;
         this.taskRepository = taskRepository;
     }
@@ -34,23 +37,7 @@ public class CardController {
     }
     @GetMapping("/all")
     private List<Card> getAllCards() {
-        List<Card> karty = cardRepository.findAll();
-        Card kartaToDo = cardRepository.findByName("To do").orElseGet(() -> cardRepository.save(new Card("To do", Integer.MAX_VALUE, 0)));
-        Card kartaDone = cardRepository.findByName("Done").orElseGet(() -> cardRepository.save(new Card("Done", Integer.MAX_VALUE, 1)));
-
-        List<Card> pomocniczaLista = new ArrayList<>();
-        pomocniczaLista.add(kartaToDo);
-        for (Card card : karty) {
-            if (!card.getName().equals("To do") && !card.getName().equals("Done")) {
-                pomocniczaLista.add(card);
-            }
-        }
-        pomocniczaLista.add(kartaDone);
-
-
-        pomocniczaLista.sort(Comparator.comparingInt(Card::getPosition));
-
-        return pomocniczaLista;
+        return cardService.getAllCards();
     }
 
     @PostMapping("/add")
