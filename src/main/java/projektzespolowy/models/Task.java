@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Table(name="tasks")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -18,5 +19,6 @@ public class Task {
     private Long id;
 
     private String name;
+
 
 }
