@@ -6,8 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import projektzespolowy.models.Card;
 import projektzespolowy.models.RowWithAllCards;
+import projektzespolowy.models.Task;
 import projektzespolowy.repository.RowRepository;
 import projektzespolowy.repository.CardRepository;
+import projektzespolowy.repository.TaskRepository;
 import projektzespolowy.wyjatki.ResourceNotFoundException;
 
 import java.util.ArrayList;
@@ -22,9 +24,11 @@ public class RowController {
 
     private final RowRepository rowRepository;
     private final CardRepository cardRepository;
+    private final TaskRepository taskRepository;
 
     @Autowired
-    public RowController(RowRepository rowRepository, CardRepository cardRepository) {
+    public RowController(TaskRepository taskRepository, RowRepository rowRepository, CardRepository cardRepository) {
+        this.taskRepository = taskRepository;
         this.rowRepository = rowRepository;
         this.cardRepository = cardRepository;
     }
@@ -43,6 +47,11 @@ public class RowController {
         }else {
             return rowRepository.findAll();
         }
+    }
+    @GetMapping("/{rowPosition}")
+    private RowWithAllCards getRowByPosition(@PathVariable Integer rowPosition) {
+        return rowRepository.findByPosition(rowPosition)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o pozycji: " + rowPosition));
     }
 
     @GetMapping("/count")
@@ -65,7 +74,7 @@ public class RowController {
                 () -> new ResourceNotFoundException("Nie znaleziono wiersza o pozycji: 0")
         );
         List<Card> skopiujCards=new ArrayList<>();
-        // kopiuje wszystkie kolumny z pierwszego wiersza do nowego wiersza
+
         for(Card kolumna: cardsoftoprow.getCardsinrow()){
             Card skopiujCard=new Card();
             skopiujCard.setName(kolumna.getName());
@@ -119,7 +128,7 @@ public class RowController {
 // =============================================================================================================================================================
 
     @DeleteMapping("/{rowId}")
-    private ResponseEntity<?> deleteRow(@PathVariable Long rowId) {
+    private ResponseEntity<RowWithAllCards> deleteRow(@PathVariable Long rowId) {
         RowWithAllCards row = rowRepository.findById(rowId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o identyfikatorze: " + rowId));
 
@@ -131,7 +140,7 @@ public class RowController {
 
         rowRepository.delete(row);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(row);
     }
     @PutMapping("/{sourceRowId}/move-column/{sourceColumnPosition}/{targetColumnPosition}")
     private ResponseEntity<?> moveColumn(
@@ -178,7 +187,7 @@ public class RowController {
 
 
     @PutMapping("/{rowId}/move-up")
-    private ResponseEntity<?> moveRowUp(@PathVariable Long rowId) {
+    private ResponseEntity<RowWithAllCards> moveRowUp(@PathVariable Long rowId) {
         RowWithAllCards row = rowRepository.findById(rowId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o identyfikatorze: " + rowId));
 
@@ -199,12 +208,12 @@ public class RowController {
         rowRepository.save(row);
         rowRepository.save(previousRow);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(row);
     }
 
 
     @PutMapping("/{rowId}/move-down")
-    private ResponseEntity<?> moveRowDown(@PathVariable Long rowId) {
+    private ResponseEntity<RowWithAllCards> moveRowDown(@PathVariable Long rowId) {
         RowWithAllCards row = rowRepository.findById(rowId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o identyfikatorze: " + rowId));
 
@@ -226,43 +235,46 @@ public class RowController {
         rowRepository.save(row);
         rowRepository.save(nextRow);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(row);
     }
     @DeleteMapping("/{rowId}/remove-column/{columnPosition}")
     private ResponseEntity<?> removeColumnFromRow(@PathVariable Long rowId, @PathVariable Integer columnPosition) {
 
-
         RowWithAllCards row = rowRepository.findById(rowId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o identyfikatorze: " + rowId));
-
 
         List<RowWithAllCards> allRows = rowRepository.findAll();
         for (RowWithAllCards currentRow : allRows) {
 
+            List<Card> cardsToRemove = new ArrayList<>();
+            List<Card> cardsToUpdate = new ArrayList<>();
+
             for (Card card : currentRow.getCardsinrow()) {
-
                 if (card.getPosition() == columnPosition) {
+                    // Przeniesienie zadań z usuwanej kolumny do poprzedniej kolumny
+                    Optional<Card> leftCard = currentRow.getCardsinrow().stream()
+                            .filter(c -> c.getPosition() == columnPosition - 1)
+                            .findFirst();
+                    leftCard.ifPresent(previousCard -> previousCard.getTasks().addAll(card.getTasks()));
 
-                    currentRow.getCardsinrow().remove(card);
-
-                    cardRepository.delete(card);
-
-                    for (Card remainingCard : currentRow.getCardsinrow()) {
-                        if (remainingCard.getPosition() > columnPosition) {
-                            remainingCard.setPosition(remainingCard.getPosition() - 1);
-                            cardRepository.save(remainingCard);
-                        }
-                    }
-
-                    break;
+                    cardsToRemove.add(card);
+                } else if (card.getPosition() > columnPosition) {
+                    card.setPosition(card.getPosition() - 1);
+                    cardsToUpdate.add(card);
                 }
             }
+
+
+            currentRow.getCardsinrow().removeAll(cardsToRemove);
+            cardRepository.deleteAll(cardsToRemove);
+            cardRepository.saveAll(cardsToUpdate);
 
             rowRepository.save(currentRow);
         }
 
         return ResponseEntity.ok().build();
     }
+
 
 
 
