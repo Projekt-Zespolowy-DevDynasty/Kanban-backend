@@ -124,41 +124,41 @@ public class CardController {
     }
 
 
-    @DeleteMapping("/{cardId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCardAndMoveTasks(@PathVariable Long cardId) {
-        Card cardToDelete = cardRepository.findById(cardId)
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + cardId));
-
-        int position = cardToDelete.getPosition();
-        if (cardToDelete.getName().equals("To do") || cardToDelete.getName().equals("Done")) {
-            throw new UnsupportedOperationException("Nie można usunąć tej karty.");
-        }
-
-        Card leftCard = cardRepository.findByPosition(position - 1)
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o pozycji: " + (position - 1)));
-
-        List<Card> cards = cardRepository.findAllByPositionGreaterThan(position);
-        for (Card card : cards) {
-            card.setPosition(card.getPosition() - 1);
-            cardRepository.save(card);
-        }
-        // TODO: nie tworzyc nowych obiektow, tylko przypisac do nowej karty te same zadania
-        List<Task> tasks = new ArrayList<>();
-
-        for (Task task : cardToDelete.getTasks()) {
-            Task newTask = new Task();
-            newTask.setName(task.getName());
-            taskRepository.save(newTask);
-            tasks.add(newTask);
-        }
-        List<Task> leftCardTasks = leftCard.getTasks();
-        leftCardTasks.addAll(tasks);
-
-
-        cardRepository.save(leftCard);
-        cardRepository.delete(cardToDelete);
-    }
+//    @DeleteMapping("/{cardId}")
+//    @ResponseStatus(HttpStatus.NO_CONTENT)
+//    public void deleteCardAndMoveTasks(@PathVariable Long cardId) {
+//        Card cardToDelete = cardRepository.findById(cardId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + cardId));
+//
+//        int position = cardToDelete.getPosition();
+//        if (cardToDelete.getName().equals("To do") || cardToDelete.getName().equals("Done")) {
+//            throw new UnsupportedOperationException("Nie można usunąć tej karty.");
+//        }
+//
+//        Card leftCard = cardRepository.findByPosition(position - 1)
+//                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o pozycji: " + (position - 1)));
+//
+//        List<Card> cards = cardRepository.findAllByPositionGreaterThan(position);
+//        for (Card card : cards) {
+//            card.setPosition(card.getPosition() - 1);
+//            cardRepository.save(card);
+//        }
+//        // TODO: nie tworzyc nowych obiektow, tylko przypisac do nowej karty te same zadania
+//        List<Task> tasks = new ArrayList<>();
+//
+//        for (Task task : cardToDelete.getTasks()) {
+//            Task newTask = new Task();
+//            newTask.setName(task.getName());
+//            taskRepository.save(newTask);
+//            tasks.add(newTask);
+//        }
+//        List<Task> leftCardTasks = leftCard.getTasks();
+//        leftCardTasks.addAll(tasks);
+//
+//
+//        cardRepository.save(leftCard);
+//        cardRepository.delete(cardToDelete);
+//    }
 
     @PutMapping("/{id}/edit-name")
     public ResponseEntity<Map<String, String>> editColumnName(@PathVariable Long id, @RequestBody String newName) {

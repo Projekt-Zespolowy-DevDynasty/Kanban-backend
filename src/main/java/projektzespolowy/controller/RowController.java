@@ -12,10 +12,7 @@ import projektzespolowy.repository.CardRepository;
 import projektzespolowy.repository.TaskRepository;
 import projektzespolowy.wyjatki.ResourceNotFoundException;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -45,13 +42,28 @@ public class RowController {
             rowRepository.save(row);
             return rowRepository.findAll();
         }else {
-            return rowRepository.findAll();
+            // sort rows by position
+            List<RowWithAllCards> rows = rowRepository.findAll();
+            for (RowWithAllCards row : rows) {
+                row.getCardsinrow().sort(Comparator.comparingInt(Card::getPosition));
+            }
+            rows.sort(Comparator.comparingInt(RowWithAllCards::getPosition));
+            return rows;
         }
     }
     @GetMapping("/{rowPosition}")
     private RowWithAllCards getRowByPosition(@PathVariable Integer rowPosition) {
         return rowRepository.findByPosition(rowPosition)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o pozycji: " + rowPosition));
+    }
+    @GetMapping("/getrowbyid/{rowId}")
+    private RowWithAllCards getRowById(@PathVariable Integer rowId) {
+        // change rowid from integer to long
+        Long rowIdLong = Long.valueOf(rowId);
+        RowWithAllCards row = rowRepository.findById(rowIdLong)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o identyfikatorze: " + rowId));
+        row.getCardsinrow().sort(Comparator.comparingInt(Card::getPosition));
+        return row;
     }
 
     @GetMapping("/count")
@@ -237,41 +249,48 @@ public class RowController {
 
         return ResponseEntity.ok().body(row);
     }
-    @DeleteMapping("/{rowId}/remove-column/{columnPosition}")
-    private ResponseEntity<?> removeColumnFromRow(@PathVariable Long rowId, @PathVariable Integer columnPosition) {
-
-        RowWithAllCards row = rowRepository.findById(rowId)
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o identyfikatorze: " + rowId));
+    @DeleteMapping("/remove-column/{columnPosition}")
+    private ResponseEntity<?> removeColumnFromRow(@PathVariable Integer columnPosition) {
 
         List<RowWithAllCards> allRows = rowRepository.findAll();
         for (RowWithAllCards currentRow : allRows) {
-
-            List<Card> cardsToRemove = new ArrayList<>();
-            List<Card> cardsToUpdate = new ArrayList<>();
-
             for (Card card : currentRow.getCardsinrow()) {
                 if (card.getPosition() == columnPosition) {
-                    // Przeniesienie zadań z usuwanej kolumny do poprzedniej kolumny
-                    Optional<Card> leftCard = currentRow.getCardsinrow().stream()
+                    Card leftCardwithout = currentRow.getCardsinrow().stream()
                             .filter(c -> c.getPosition() == columnPosition - 1)
-                            .findFirst();
-                    leftCard.ifPresent(previousCard -> previousCard.getTasks().addAll(card.getTasks()));
+                            .findFirst()
+                            .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o pozycji: " + (columnPosition - 1)));
 
-                    cardsToRemove.add(card);
-                } else if (card.getPosition() > columnPosition) {
-                    card.setPosition(card.getPosition() - 1);
-                    cardsToUpdate.add(card);
+                    Card leftCard = cardRepository.findById(leftCardwithout.getId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o identyfikatorze: " + leftCardwithout.getId()));
+
+
+//                    List<Task> tasks = new ArrayList<>();
+//
+//                    for (Task task : card.getTasks()) {
+//                        Task newTask = new Task();
+//                        newTask.setName(task.getName());
+//                        taskRepository.save(newTask);
+//                        tasks.add(newTask);
+//                    }
+//                    List<Task> leftCardTasks = leftCard.getTasks();
+//                    leftCardTasks.addAll(tasks);
+
+                    List<Card> cardsInRow = currentRow.getCardsinrow();
+                    for (Card card2 : cardsInRow) {
+                        if (card2.getPosition() > columnPosition) {
+                            card2.setPosition(card2.getPosition() - 1);
+                            cardRepository.save(card2);
+                        }
+                    }
+                    cardRepository.delete(card);
+                    cardRepository.save(leftCard);
+                    currentRow.getCardsinrow().remove(card);
+
                 }
             }
-
-
-            currentRow.getCardsinrow().removeAll(cardsToRemove);
-            cardRepository.deleteAll(cardsToRemove);
-            cardRepository.saveAll(cardsToUpdate);
-
             rowRepository.save(currentRow);
         }
-
         return ResponseEntity.ok().build();
     }
 
