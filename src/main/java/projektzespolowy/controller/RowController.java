@@ -133,38 +133,49 @@ public class RowController {
 
         return ResponseEntity.ok().build();
     }
-    @PutMapping("/{sourceRowId}/move-column/{columnId}/{targetRowId}")
+    @PutMapping("/{sourceRowId}/move-column/{sourceColumnPosition}/{targetColumnPosition}")
     private ResponseEntity<?> moveColumn(
             @PathVariable Long sourceRowId,
-            @PathVariable Long columnId,
-            @PathVariable Long targetRowId) {
+            @PathVariable Integer sourceColumnPosition,
+            @PathVariable Integer targetColumnPosition) {
+
 
         RowWithAllCards sourceRow = rowRepository.findById(sourceRowId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o identyfikatorze: " + sourceRowId));
-        RowWithAllCards targetRow = rowRepository.findById(targetRowId)
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o identyfikatorze: " + targetRowId));
 
-        Card columnToMove = null;
-        for (Card card : sourceRow.getCardsinrow()) {
-            if (card.getId().equals(columnId)) {
-                columnToMove = card;
-                break;
+
+        List<RowWithAllCards> allRows = rowRepository.findAll();
+
+
+        for (RowWithAllCards row : allRows) {
+
+            List<Card> cardsInCurrentRow = row.getCardsinrow();
+
+
+            for (Card card : cardsInCurrentRow) {
+
+                if (card.getPosition() == sourceColumnPosition) {
+                    card.setPosition(targetColumnPosition);
+                }
+
+                else if (sourceColumnPosition < targetColumnPosition && sourceColumnPosition < card.getPosition() && card.getPosition() <= targetColumnPosition) {
+                    card.setPosition(card.getPosition() - 1);
+                } else if (targetColumnPosition < sourceColumnPosition && targetColumnPosition <= card.getPosition() && card.getPosition() < sourceColumnPosition) {
+                    card.setPosition(card.getPosition() + 1);
+                }
             }
         }
-        if (columnToMove == null) {
-            throw new ResourceNotFoundException("Nie znaleziono kolumny o identyfikatorze: " + columnId);
-        }
 
-        sourceRow.getCardsinrow().remove(columnToMove);
-        cardRepository.delete(columnToMove);
 
-        columnToMove.setPosition(targetRow.getCardsinrow().size());
-        cardRepository.save(columnToMove);
-        targetRow.getCardsinrow().add(columnToMove);
-        rowRepository.save(targetRow);
+        rowRepository.saveAll(allRows);
 
         return ResponseEntity.ok().build();
     }
+
+
+
+
+
 
     @PutMapping("/{rowId}/move-up")
     private ResponseEntity<?> moveRowUp(@PathVariable Long rowId) {
@@ -217,28 +228,43 @@ public class RowController {
 
         return ResponseEntity.ok().build();
     }
-    @DeleteMapping("/{rowId}/remove-column/{columnId}")
-    private ResponseEntity<?> removeColumnFromRow(@PathVariable Long rowId, @PathVariable Long columnId) {
+    @DeleteMapping("/{rowId}/remove-column/{columnPosition}")
+    private ResponseEntity<?> removeColumnFromRow(@PathVariable Long rowId, @PathVariable Integer columnPosition) {
+
+
         RowWithAllCards row = rowRepository.findById(rowId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o identyfikatorze: " + rowId));
 
-        Card columnToRemove = null;
-        for (Card card : row.getCardsinrow()) {
-            if (card.getId().equals(columnId)) {
-                columnToRemove = card;
-                break;
-            }
-        }
-        if (columnToRemove == null) {
-            throw new ResourceNotFoundException("Nie znaleziono kolumny o identyfikatorze: " + columnId);
-        }
 
-        row.getCardsinrow().remove(columnToRemove);
-        cardRepository.delete(columnToRemove);
-        rowRepository.save(row);
+        List<RowWithAllCards> allRows = rowRepository.findAll();
+        for (RowWithAllCards currentRow : allRows) {
+
+            for (Card card : currentRow.getCardsinrow()) {
+
+                if (card.getPosition() == columnPosition) {
+
+                    currentRow.getCardsinrow().remove(card);
+
+                    cardRepository.delete(card);
+
+                    for (Card remainingCard : currentRow.getCardsinrow()) {
+                        if (remainingCard.getPosition() > columnPosition) {
+                            remainingCard.setPosition(remainingCard.getPosition() - 1);
+                            cardRepository.save(remainingCard);
+                        }
+                    }
+
+                    break;
+                }
+            }
+
+            rowRepository.save(currentRow);
+        }
 
         return ResponseEntity.ok().build();
     }
+
+
 
     //TODO: przenoszenie kolumny w wierszu, przenoszenie wiersza gora/dol, usuwanie kolumny, usuwanie wiersza, usuniecie useles funkcji z cardcontroler
 }
