@@ -1,5 +1,6 @@
 package projektzespolowy.controller;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import projektzespolowy.models.Task;
 import projektzespolowy.repository.RowRepository;
 import projektzespolowy.repository.CardRepository;
 import projektzespolowy.repository.TaskRepository;
+import projektzespolowy.service.RowWithAllCardsService;
 import projektzespolowy.wyjatki.ResourceNotFoundException;
 
 import java.util.*;
@@ -22,12 +24,14 @@ public class RowController {
     private final RowRepository rowRepository;
     private final CardRepository cardRepository;
     private final TaskRepository taskRepository;
+    private final RowWithAllCardsService rowWithAllCardsService;
 
     @Autowired
-    public RowController(TaskRepository taskRepository, RowRepository rowRepository, CardRepository cardRepository) {
+    public RowController(TaskRepository taskRepository, RowRepository rowRepository, CardRepository cardRepository, RowWithAllCardsService rowWithAllCardsService) {
         this.taskRepository = taskRepository;
         this.rowRepository = rowRepository;
         this.cardRepository = cardRepository;
+        this.rowWithAllCardsService = rowWithAllCardsService;
     }
 
     @GetMapping("/all")
@@ -154,16 +158,11 @@ public class RowController {
 
         return ResponseEntity.ok().body(row);
     }
-    @PutMapping("/{sourceRowId}/move-column/{sourceColumnPosition}/{targetColumnPosition}")
+
+    @PutMapping("/move-column/{sourceColumnPosition}/{targetColumnPosition}")
     private ResponseEntity<?> moveColumn(
-            @PathVariable Long sourceRowId,
             @PathVariable Integer sourceColumnPosition,
             @PathVariable Integer targetColumnPosition) {
-
-
-        RowWithAllCards sourceRow = rowRepository.findById(sourceRowId)
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o identyfikatorze: " + sourceRowId));
-
 
         List<RowWithAllCards> allRows = rowRepository.findAll();
 
@@ -249,49 +248,10 @@ public class RowController {
 
         return ResponseEntity.ok().body(row);
     }
-    @DeleteMapping("/remove-column/{columnPosition}")
-    private ResponseEntity<?> removeColumnFromRow(@PathVariable Integer columnPosition) {
 
-        List<RowWithAllCards> allRows = rowRepository.findAll();
-        for (RowWithAllCards currentRow : allRows) {
-            for (Card card : currentRow.getCardsinrow()) {
-                if (card.getPosition() == columnPosition) {
-                    Card leftCardwithout = currentRow.getCardsinrow().stream()
-                            .filter(c -> c.getPosition() == columnPosition - 1)
-                            .findFirst()
-                            .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o pozycji: " + (columnPosition - 1)));
-
-                    Card leftCard = cardRepository.findById(leftCardwithout.getId())
-                            .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o identyfikatorze: " + leftCardwithout.getId()));
-
-
-//                    List<Task> tasks = new ArrayList<>();
-//
-//                    for (Task task : card.getTasks()) {
-//                        Task newTask = new Task();
-//                        newTask.setName(task.getName());
-//                        taskRepository.save(newTask);
-//                        tasks.add(newTask);
-//                    }
-//                    List<Task> leftCardTasks = leftCard.getTasks();
-//                    leftCardTasks.addAll(tasks);
-
-                    List<Card> cardsInRow = currentRow.getCardsinrow();
-                    for (Card card2 : cardsInRow) {
-                        if (card2.getPosition() > columnPosition) {
-                            card2.setPosition(card2.getPosition() - 1);
-                            cardRepository.save(card2);
-                        }
-                    }
-                    cardRepository.delete(card);
-                    cardRepository.save(leftCard);
-                    currentRow.getCardsinrow().remove(card);
-
-                }
-            }
-            rowRepository.save(currentRow);
-        }
-        return ResponseEntity.ok().build();
+    @DeleteMapping("/remove-column/{position}")
+    public void removeColumnAndAdjust(@PathVariable int position) {
+        rowWithAllCardsService.removeColumnAndAdjust(position);
     }
 
 

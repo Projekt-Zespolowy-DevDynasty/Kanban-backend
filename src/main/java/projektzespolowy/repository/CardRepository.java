@@ -12,7 +12,6 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     Optional<Card> findByName(String toDo);
 
     Card findFirstByIdLessThanOrderByIdDesc(Long cardId);
-
     List<Card> findByPosition(int position);
 
     List<Card> findAllByPositionGreaterThan(int position);
