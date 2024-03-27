@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface RowRepository extends JpaRepository<RowWithAllCards, Long> {
 
-    Optional<Object> findByPosition(int i);
+    Optional<RowWithAllCards> findByPosition(int i);
 
     List<RowWithAllCards> findAllByPositionGreaterThanOrderByPositionAsc(int position);
 
