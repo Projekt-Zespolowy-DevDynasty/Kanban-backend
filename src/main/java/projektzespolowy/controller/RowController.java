@@ -69,6 +69,16 @@ public class RowController {
         row.getCardsinrow().sort(Comparator.comparingInt(Card::getPosition));
         return row;
     }
+    @PutMapping("/rename-row/{rowId}")
+    private ResponseEntity<?> renameRow(@PathVariable Long rowId, @RequestBody String newName) {
+        RowWithAllCards row = rowRepository.findById(rowId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o identyfikatorze: " + rowId));
+
+        row.setName(newName);
+        rowRepository.save(row);
+
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping("/count")
     public Long getRowCount() {
@@ -76,7 +86,7 @@ public class RowController {
     }
 
     @PostMapping("/add")
-    private ResponseEntity<RowWithAllCards> addRow() {
+    private ResponseEntity<RowWithAllCards> addRow(@RequestBody String name) {
         RowWithAllCards lastRow = rowRepository.findTopByOrderByPositionDesc();
         RowWithAllCards row= new RowWithAllCards();
 
@@ -101,10 +111,17 @@ public class RowController {
         }
         row.setCardsinrow(skopiujCards);
 
+        // Set the name of the new row
+        row.setName(name);
         RowWithAllCards createdRow = rowRepository.save(row);
+
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRow);
     }
+
+
+
+
 
     @PostMapping("/add-column")
     private ResponseEntity<RowWithAllCards> addColumnToRow(@RequestBody String name) {
