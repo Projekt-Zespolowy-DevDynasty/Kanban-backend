@@ -4,13 +4,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import projektzespolowy.models.Row;
 import projektzespolowy.models.Card;
+import projektzespolowy.models.RowWithAllCards;
 import projektzespolowy.repository.RowRepository;
 import projektzespolowy.repository.CardRepository;
 import projektzespolowy.wyjatki.ResourceNotFoundException;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -27,38 +29,75 @@ public class RowController {
     }
 
     @GetMapping("/all")
-    private List<Row> getAllRows() {
+    private List<RowWithAllCards> getAllRows() {
         return rowRepository.findAll();
     }
 
+    @GetMapping("/count")
+    public Long getRowCount() {
+        return rowRepository.count();
+    }
+
     @PostMapping("/add")
-    private ResponseEntity<Row> addRow() {
+    private ResponseEntity<RowWithAllCards> addRow() {
 
-        Row lastRow = rowRepository.findTopByOrderByPositionDesc();
-        Row row= new Row();
+        RowWithAllCards lastRow = rowRepository.findTopByOrderByPositionDesc();
+        RowWithAllCards row= new RowWithAllCards();
 
-        int newPosition = 1;
+        int newPosition = 0;
         if (lastRow != null) {
 
             newPosition = lastRow.getPosition() + 1;
         }
-
-
+        List<Card>initialCards=new ArrayList<>();
         row.setPosition(newPosition);
+        row.setCardsinrow(initialCards);
 
-        Row createdRow = rowRepository.save(row);
+
+        RowWithAllCards createdRow = rowRepository.save(row);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRow);
     }
+
+    @PostMapping("/add-column/{rowId}")
+    private ResponseEntity<RowWithAllCards> addColumnToRow(@PathVariable Long rowId, @RequestBody Card newCard) {
+
+        Optional<RowWithAllCards> optionalRow = rowRepository.findById(rowId);
+        if (optionalRow.isPresent()) {
+            RowWithAllCards row = optionalRow.get();
+
+
+            List<Card> existingCards = row.getCardsinrow();
+
+
+            int newPosition = existingCards.size();
+            newCard.setPosition(newPosition);
+
+
+            existingCards.add(newCard);
+
+
+            row.setCardsinrow(existingCards);
+
+
+            RowWithAllCards updatedRow = rowRepository.save(row);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(updatedRow);
+        } else {
+
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteRow(@PathVariable Long id) {
-        Row rowToDelete = rowRepository.findById(id)
+        RowWithAllCards rowToDelete = rowRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o podanym ID: " + id));
-        List<Row> rowsToUpdate=rowRepository.findAllByPositionGreaterThanOrderByPositionAsc(rowToDelete.getPosition());
-                for(Row row:rowsToUpdate)
+        List<RowWithAllCards> rowsToUpdate=rowRepository.findAllByPositionGreaterThanOrderByPositionAsc(rowToDelete.getPosition());
+                for(RowWithAllCards row:rowsToUpdate)
                 {
                     row.setPosition(row.getPosition()-1);
                     rowRepository.save(row);

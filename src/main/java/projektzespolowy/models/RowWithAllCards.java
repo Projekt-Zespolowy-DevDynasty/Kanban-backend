@@ -8,12 +8,11 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Entity
-@Table(name="rows")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Builder
-public class Row {
+public class RowWithAllCards {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id", nullable = false)
