@@ -16,7 +16,7 @@ import projektzespolowy.wyjatki.ResourceNotFoundException;
 
 import java.util.*;
 
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "https://devdynastykanban.azurewebsites.net/")
 @RestController
 @RequestMapping("/api/row")
 public class RowController {

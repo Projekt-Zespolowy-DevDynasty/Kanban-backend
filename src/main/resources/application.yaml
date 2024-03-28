@@ -1,13 +1,11 @@
 spring:
   datasource:
-    driver-class-name: com.mysql.jdbc.Driver
-    username: root
-    url: jdbc:mysql://localhost:3306/newdatabase
-    password: 1234
+    url: jdbc:sqlserver://kanbandbdynasty.database.windows.net:1433;database=ddkanbandb;user=kanbanboard@kanbandbdynasty;password=Devdynasty1!;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;
   jpa:
+    show-sql: true
     hibernate:
-      ddl-auto: create-drop
-    show-sql: 'true'
-  sql:
-    init:
-      mode: always
+      ddl-auto: update
+      dialect : org.hibernate.dialect.SQLServer2012Dialect
+
+server:
+  port: 9191
