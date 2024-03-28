@@ -24,7 +24,7 @@ public class CardController {
     private final TaskRepository taskRepository;
     private CardServiceImpl cardService;
     private RowRepository rowWithAllCardsRepository;
-
+// deploy
     @Autowired
     public CardController(CardRepository cardRepository,
                           TaskRepository taskRepository,
