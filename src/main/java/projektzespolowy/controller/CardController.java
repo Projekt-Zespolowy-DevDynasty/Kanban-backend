@@ -5,8 +5,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import projektzespolowy.models.Card;
+import projektzespolowy.models.RowWithAllCards;
 import projektzespolowy.models.Task;
 import projektzespolowy.repository.CardRepository;
+import projektzespolowy.repository.RowRepository;
 import projektzespolowy.repository.TaskRepository;
 import projektzespolowy.service.CardServiceImpl;
 import projektzespolowy.wyjatki.ResourceNotFoundException;
@@ -21,14 +23,16 @@ public class CardController {
     private CardRepository cardRepository;
     private final TaskRepository taskRepository;
     private CardServiceImpl cardService;
+    private RowRepository rowWithAllCardsRepository;
 
     @Autowired
     public CardController(CardRepository cardRepository,
                           TaskRepository taskRepository,
-                          CardServiceImpl cardService) {
+                          CardServiceImpl cardService, RowRepository rowWithAllCardsRepository) {
         this.cardService = cardService;
         this.cardRepository = cardRepository;
         this.taskRepository = taskRepository;
+        this.rowWithAllCardsRepository = rowWithAllCardsRepository;
     }
 
     @GetMapping("/{id}")
@@ -116,11 +120,23 @@ public class CardController {
     }
     @PutMapping("/{id}/maxTasksLimit")
     public void updateMaxTasksLimit(@PathVariable Long id, @RequestBody int maxTasksLimit) {
-        Card card = cardRepository.findById(id)
+        Card targetCard = cardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o podanym ID: " + id));
 
-        card.setMaxTasksLimit(maxTasksLimit);
-        cardRepository.save(card);
+        // Znalezienie pozycji karty
+        int targetPosition = targetCard.getPosition();
+
+        // Znalezienie wszystkich kart w tej samej pozycji w innych wierszach
+        List<RowWithAllCards> rows = rowWithAllCardsRepository.findAll();
+
+        rows.forEach(row -> {
+            row.getCardsinrow().forEach(card -> {
+                if (card.getPosition() == targetPosition) {
+                    card.setMaxTasksLimit(maxTasksLimit);
+                    cardRepository.save(card);
+                }
+            });
+        });
     }
 
 

@@ -158,7 +158,7 @@ public class RowController {
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
-// =============================================================================================================================================================
+
 
     @DeleteMapping("/{rowId}")
     private ResponseEntity<RowWithAllCards> deleteRow(@PathVariable Long rowId) {
@@ -190,12 +190,9 @@ public class RowController {
 
 
             for (Card card : cardsInCurrentRow) {
-
                 if (card.getPosition() == sourceColumnPosition) {
                     card.setPosition(targetColumnPosition);
-                }
-
-                else if (sourceColumnPosition < targetColumnPosition && sourceColumnPosition < card.getPosition() && card.getPosition() <= targetColumnPosition) {
+                } else if (sourceColumnPosition < targetColumnPosition && sourceColumnPosition < card.getPosition() && card.getPosition() <= targetColumnPosition) {
                     card.setPosition(card.getPosition() - 1);
                 } else if (targetColumnPosition < sourceColumnPosition && targetColumnPosition <= card.getPosition() && card.getPosition() < sourceColumnPosition) {
                     card.setPosition(card.getPosition() + 1);
@@ -219,7 +216,7 @@ public class RowController {
         RowWithAllCards row = rowRepository.findById(rowId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o identyfikatorze: " + rowId));
 
-        if (row.getPosition() == 1) {
+        if (row.getPosition() == 0) {
             throw new UnsupportedOperationException("Wiersz jest już na początku i nie może być przesunięty w górę.");
         }
 
