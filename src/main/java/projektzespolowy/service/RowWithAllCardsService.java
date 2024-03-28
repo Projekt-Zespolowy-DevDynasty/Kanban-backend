@@ -33,6 +33,7 @@ public class RowWithAllCardsService {
                 Card card = row.getCardsinrow().get(i);
                 if (card.getPosition() == position) {
                     toRemove = card;
+                    // TODO: nie kopiowac taskow tylko caly obiekt task przeniesc do karty po lewej
                     // Skopiuj i przenieś taski do karty po lewej, jeśli istnieje
                     if (i > 0) {
                         Card leftCard = row.getCardsinrow().get(i - 1);
