@@ -216,7 +216,7 @@ public class RowController {
         RowWithAllCards row = rowRepository.findById(rowId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o identyfikatorze: " + rowId));
 
-        if (row.getPosition() == 0) {
+        if (row.getPosition() == 1) {
             throw new UnsupportedOperationException("Wiersz jest już na początku i nie może być przesunięty w górę.");
         }
 
