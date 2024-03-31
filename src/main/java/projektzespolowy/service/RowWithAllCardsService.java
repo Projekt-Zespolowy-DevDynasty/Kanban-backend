@@ -6,25 +6,29 @@ import org.springframework.transaction.annotation.Transactional;
 import projektzespolowy.models.Card;
 import projektzespolowy.models.RowWithAllCards;
 import projektzespolowy.models.Task;
+import projektzespolowy.repository.CardRepository;
 import projektzespolowy.repository.RowRepository;
 import projektzespolowy.repository.TaskRepository;
 import projektzespolowy.wyjatki.ResourceNotFoundException;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
 public class RowWithAllCardsService {
 
     @Autowired
-    private RowRepository rowWithAllCardsRepository;
+    private RowRepository rowRepository;
     @Autowired
     private TaskRepository taskRepository;
+    @Autowired
+    private CardRepository cardRepository;
 
     @Transactional
     public void removeColumnAndAdjust(int position) {
-        List<RowWithAllCards> rows = rowWithAllCardsRepository.findAll();
+        List<RowWithAllCards> rows = rowRepository.findAll();
 
         for (RowWithAllCards row : rows) {
             row.getCardsinrow().sort((c1, c2) -> Integer.compare(c1.getPosition(), c2.getPosition()));
@@ -55,6 +59,27 @@ public class RowWithAllCardsService {
             }
         }
 
-        rowWithAllCardsRepository.saveAll(rows);
+        rowRepository.saveAll(rows);
+    }
+    @Transactional
+    public List<RowWithAllCards> getAllRows(){
+        if (rowRepository.findAll().isEmpty()) {
+            RowWithAllCards row = new RowWithAllCards();
+            row.setPosition(0);
+            List<Card> karty = cardRepository.findAll();
+            Card kartaToDo = new Card("To do", Integer.MAX_VALUE, 0);
+            Card kartaDone = new Card("Done", Integer.MAX_VALUE, 1);
+            row.setCardsinrow(List.of(kartaDone, kartaToDo));
+            rowRepository.save(row);
+            return rowRepository.findAll();
+        }else {
+            // sort rows by position
+            List<RowWithAllCards> rows = rowRepository.findAll();
+            for (RowWithAllCards row : rows) {
+                row.getCardsinrow().sort(Comparator.comparingInt(Card::getPosition));
+            }
+            rows.sort(Comparator.comparingInt(RowWithAllCards::getPosition));
+            return rows;
+        }
     }
 }

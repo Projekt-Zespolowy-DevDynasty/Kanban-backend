@@ -36,24 +36,7 @@ public class RowController {
 
     @GetMapping("/all")
     private List<RowWithAllCards> getAllRows() {
-        if (rowRepository.findAll().isEmpty()) {
-            RowWithAllCards row = new RowWithAllCards();
-            row.setPosition(0);
-            List<Card> karty = cardRepository.findAll();
-            Card kartaToDo = new Card("To do", Integer.MAX_VALUE, 0);
-            Card kartaDone = new Card("Done", Integer.MAX_VALUE, 1);
-            row.setCardsinrow(List.of(kartaDone, kartaToDo));
-            rowRepository.save(row);
-            return rowRepository.findAll();
-        }else {
-            // sort rows by position
-            List<RowWithAllCards> rows = rowRepository.findAll();
-            for (RowWithAllCards row : rows) {
-                row.getCardsinrow().sort(Comparator.comparingInt(Card::getPosition));
-            }
-            rows.sort(Comparator.comparingInt(RowWithAllCards::getPosition));
-            return rows;
-        }
+        return rowWithAllCardsService.getAllRows();
     }
     @GetMapping("/{rowPosition}")
     private RowWithAllCards getRowByPosition(@PathVariable Integer rowPosition) {
