@@ -13,19 +13,17 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 @Builder
-public class Task {
+public class Useer {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    private String name;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String color;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-    @JoinTable(
-            name = "task_useer",
-            joinColumns = @JoinColumn(name = "task_id"),
-            inverseJoinColumns = @JoinColumn(name = "useer_id")
-    )
-    private List<Useer> useers;
+    @ManyToMany(mappedBy = "useers", fetch = FetchType.EAGER)
+    private List<Task> tasks;
 }
