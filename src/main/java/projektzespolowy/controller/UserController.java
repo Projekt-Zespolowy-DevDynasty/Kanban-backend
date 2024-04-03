@@ -24,19 +24,18 @@ public class UserController {
         this.userRepository = userRepository;
         this.taskRepository = taskRepository;
     }
-
-
+    //Dodaje uzytkownika
     @PostMapping("/add")
     public Useer addUser(@RequestBody Useer user) {
         user.setColor(ColorGenerator.getRandomLightColor());
         return userRepository.save(user);
     }
-
-
+    //Zwraca wszystkich uzytkownikow
     @GetMapping("/get")
     public List<Useer> getAllUsers() {
         return userRepository.findAll();
     }
+    //przypisuje uzytkownika do taska
     @PostMapping("/{userId}/assignToTask/{taskId}")
     public ResponseEntity<String> assignUserToTask(@PathVariable Long userId, @PathVariable Long taskId) {
         Optional<Useer> userOptional = userRepository.findById(userId);
@@ -64,7 +63,7 @@ public class UserController {
         return ResponseEntity.ok("Przypisano użytkownika do zadania");
     }
 
-
+// usuwa uzytkownika z taska
     @DeleteMapping("/{userId}/removeFromTask/{taskId}")
     public ResponseEntity<String> removeUserFromTask(@PathVariable Long userId, @PathVariable Long taskId) {
         Optional<Useer> userOptional = userRepository.findById(userId);
@@ -89,7 +88,7 @@ public class UserController {
         return ResponseEntity.ok("usunieto poprawnie");
     }
 
-
+// usuwa w ogole uzytkownika
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         if (!userRepository.existsById(id)) {
