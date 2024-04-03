@@ -103,7 +103,7 @@ public class CardController {
 
     @PutMapping("/{sourceCardId}/move-task/{taskId}/to-card/{destinationCardId}")
     private void moveTaskToAnotherCard(@PathVariable Long sourceCardId, @PathVariable Long taskId, @PathVariable Long destinationCardId) {
-
+    // wyciagnac to do serwisu i uzywac
         Card sourceCard = cardRepository.findById(sourceCardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + sourceCardId));
         Card destinationCard = cardRepository.findById(destinationCardId)

@@ -91,13 +91,11 @@ public class UserController {
 
 // usuwa w ogole uzytkownika
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+    public void deleteUser(@PathVariable Long id) {
         if (!userRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
+            throw new IllegalArgumentException("Nie znaleziono użytkownika o identyfikatorze: " + id);
         }
-
         userRepository.deleteById(id);
-        return ResponseEntity.ok("Uzytkownik usuniety calkowicie");
     }
     // Wyświetla wszystkich użytkowników przypisanych do danego zadania
     @GetMapping("/{taskId}/usersAssigned")
