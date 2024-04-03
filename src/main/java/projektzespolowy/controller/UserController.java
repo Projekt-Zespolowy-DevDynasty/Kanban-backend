@@ -99,4 +99,36 @@ public class UserController {
         userRepository.deleteById(id);
         return ResponseEntity.ok("Uzytkownik usuniety calkowicie");
     }
+    // Wyświetla wszystkich użytkowników przypisanych do danego zadania
+    @GetMapping("/{taskId}/usersAssigned")
+    public ResponseEntity<List<Useer>> getUsersAssignedToTask(@PathVariable Long taskId) {
+        Optional<Task> taskOptional = taskRepository.findById(taskId);
+
+        if (!taskOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Task task = taskOptional.get();
+        List<Useer> usersAssigned = task.getUseers();
+
+        return ResponseEntity.ok(usersAssigned);
+    }
+
+    // Wyświetla wszystkich użytkowników nieprzypisanych do danego zadania
+    @GetMapping("/{taskId}/usersNotAssigned")
+    public ResponseEntity<List<Useer>> getUsersNotAssignedToTask(@PathVariable Long taskId) {
+        Optional<Task> taskOptional = taskRepository.findById(taskId);
+
+        if (!taskOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Task task = taskOptional.get();
+        List<Useer> allUsers = userRepository.findAll();
+        List<Useer> usersAssigned = task.getUseers();
+
+        allUsers.removeAll(usersAssigned);
+
+        return ResponseEntity.ok(allUsers);
+    }
 }

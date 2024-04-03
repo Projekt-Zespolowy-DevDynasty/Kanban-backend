@@ -253,5 +253,5 @@ public class RowController {
 
 
 
-    //TODO: przenoszenie kolumny w wierszu, przenoszenie wiersza gora/dol, usuwanie kolumny, usuwanie wiersza, usuniecie useles funkcji z cardcontroler
+
 }
