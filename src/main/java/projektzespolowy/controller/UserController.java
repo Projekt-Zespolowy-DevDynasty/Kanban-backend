@@ -37,7 +37,34 @@ public class UserController {
     public List<Useer> getAllUsers() {
         return userRepository.findAll();
     }
-    //nie wiemy czy działa
+    @PostMapping("/{userId}/assignToTask/{taskId}")
+    public ResponseEntity<String> assignUserToTask(@PathVariable Long userId, @PathVariable Long taskId) {
+        Optional<Useer> userOptional = userRepository.findById(userId);
+        Optional<Task> taskOptional = taskRepository.findById(taskId);
+
+        if (!userOptional.isPresent() || !taskOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Task task = taskOptional.get();
+        Useer user = userOptional.get();
+
+
+        if (task.getUseers().contains(user)) {
+            return ResponseEntity.badRequest().body("Użytkownik już przypisany do tego zadania");
+        }
+
+
+        task.getUseers().add(user);
+        user.getTasks().add(task);
+
+        taskRepository.save(task);
+        userRepository.save(user);
+
+        return ResponseEntity.ok("Przypisano użytkownika do zadania");
+    }
+
+
     @DeleteMapping("/{userId}/removeFromTask/{taskId}")
     public ResponseEntity<String> removeUserFromTask(@PathVariable Long userId, @PathVariable Long taskId) {
         Optional<Useer> userOptional = userRepository.findById(userId);
@@ -62,7 +89,7 @@ public class UserController {
         return ResponseEntity.ok("usunieto poprawnie");
     }
 
-//nie wiemy czy działa
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         if (!userRepository.existsById(id)) {
