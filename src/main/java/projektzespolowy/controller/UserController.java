@@ -56,7 +56,7 @@ public class UserController {
 
 
         task.getUseers().add(user);
-        user.getTasks().add(task);
+        //user.getTasks().add(task);
 
         taskRepository.save(task);
         userRepository.save(user);
@@ -82,7 +82,7 @@ public class UserController {
             return ResponseEntity.badRequest().body("uzytkownik nie dodany do taska");
         }
 
-        user.getTasks().remove(task);
+        //user.getTasks().remove(task);
         taskRepository.save(task);
         userRepository.save(user);
 
