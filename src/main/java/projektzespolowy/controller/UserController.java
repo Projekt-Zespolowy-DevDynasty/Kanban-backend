@@ -1,5 +1,6 @@
 package projektzespolowy.controller;
 
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -7,6 +8,7 @@ import projektzespolowy.models.Task;
 import projektzespolowy.models.Useer;
 import projektzespolowy.repository.TaskRepository;
 import projektzespolowy.repository.UserRepository;
+import projektzespolowy.service.UserService;
 import projektzespolowy.utils.ColorGenerator;
 
 import java.util.List;
@@ -19,11 +21,13 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
+    private final UserService userService;
 
     @Autowired
-    public UserController(UserRepository userRepository, TaskRepository taskRepository) {
+    public UserController(UserRepository userRepository, TaskRepository taskRepository, UserService userService) {
         this.userRepository = userRepository;
         this.taskRepository = taskRepository;
+        this.userService = userService;
     }
     //Dodaje uzytkownika
     @PostMapping("/add")
@@ -56,12 +60,11 @@ public class UserController {
 
 
         task.getUseers().add(user);
-        user.getTasks().add(task);
+        //user.getTasks().add(task);
 
         taskRepository.save(task);
         userRepository.save(user);
-
-        return ResponseEntity.ok("Przypisano użytkownika do zadania");
+        return ResponseEntity.ok("Przypisano uzytkownika do taska");
     }
 
 // usuwa uzytkownika z taska
@@ -82,7 +85,7 @@ public class UserController {
             return ResponseEntity.badRequest().body("uzytkownik nie dodany do taska");
         }
 
-        user.getTasks().remove(task);
+        //user.getTasks().remove(task);
         taskRepository.save(task);
         userRepository.save(user);
 
@@ -92,10 +95,7 @@ public class UserController {
 // usuwa w ogole uzytkownika
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new IllegalArgumentException("Nie znaleziono użytkownika o identyfikatorze: " + id);
-        }
-        userRepository.deleteById(id);
+        userService.deleteUser(id);
     }
     // Wyświetla wszystkich użytkowników przypisanych do danego zadania
     @GetMapping("/{taskId}/usersAssigned")

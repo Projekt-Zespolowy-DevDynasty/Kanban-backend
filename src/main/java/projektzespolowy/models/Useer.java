@@ -27,6 +27,4 @@ public class Useer {
     private String email;
     private String color;
 
-    @ManyToMany(mappedBy = "useers", fetch = FetchType.EAGER)
-    private List<Task> tasks;
 }
