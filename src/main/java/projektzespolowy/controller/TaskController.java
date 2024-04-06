@@ -50,5 +50,36 @@ public class TaskController {
 
         return ResponseEntity.ok(response);
     }
+    @PutMapping("/addtask/{id}")
+    private Card addTask(@RequestBody String taskName, @PathVariable Long id) {
+        if (taskName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nazwa zadania nie może być pusta ani składać się wyłącznie z białych znaków.");
+        }
+        Card card = cardRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Nie znaleziono karty o podanym ID: " + id));
+        Task newTask = new Task();
+        newTask.setName(taskName);
+        newTask.setMaxUserLimit(5);
+        taskRepository.save(newTask);
+        List<Task> tasks = card.getTasks();
+        tasks.add(newTask);
+        card.setTasks(tasks);
+        return cardRepository.save(card);
+    }
+    @PutMapping("/task/{taskId}/changeUserLimit")
+    public Task changeTaskUserLimit(@PathVariable Long taskId, @RequestParam int newLimit) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono zadania o podanym ID: " + taskId));
+
+        if (newLimit == -1) {
+            task.setMaxUserLimit(Integer.MAX_VALUE);
+        } else if (newLimit < 1) {
+            throw new IllegalArgumentException("Limit użytkowników musi być większy niż 0.");
+        } else {
+            task.setMaxUserLimit(newLimit);
+        }
+
+        return taskRepository.save(task);
+    }
+
+
 }
-//Truskawka

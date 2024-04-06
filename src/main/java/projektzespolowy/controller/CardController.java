@@ -67,26 +67,6 @@ public class CardController {
         return cardRepository.save(card);
     }
 
-
-
-
-
-
-    @PutMapping("/addtask/{id}")
-    private Card addTask(@RequestBody String taskName, @PathVariable Long id) {
-        if (taskName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Nazwa zadania nie może być pusta ani składać się wyłącznie z białych znaków.");
-        }
-        Card card = cardRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Nie znaleziono karty o podanym ID: " + id));
-        Task newTask = new Task();
-        newTask.setName(taskName);
-        taskRepository.save(newTask);
-        List<Task> tasks = card.getTasks();
-        tasks.add(newTask);
-        card.setTasks(tasks);
-        return cardRepository.save(card);
-    }
-
     @DeleteMapping("/{cardId}/task/{taskId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTaskFromCard(@PathVariable Long cardId, @PathVariable Long taskId) {

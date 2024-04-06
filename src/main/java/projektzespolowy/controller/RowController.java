@@ -193,7 +193,7 @@ public class RowController {
 
 
 
-
+    //TODO: przenoszenie kolumny w wierszu, przenoszenie wiersza gora/dol, usuwanie kolumny, usuwanie wiersza, usuniecie useles funkcji z cardcontroler
     @PutMapping("/{rowId}/move-up")
     private ResponseEntity<RowWithAllCards> moveRowUp(@PathVariable Long rowId) {
         RowWithAllCards row = rowRepository.findById(rowId)
