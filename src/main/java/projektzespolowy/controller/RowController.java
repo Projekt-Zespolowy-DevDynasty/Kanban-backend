@@ -249,9 +249,4 @@ public class RowController {
     public void removeColumnAndAdjust(@PathVariable int position) {
         rowWithAllCardsService.removeColumnAndAdjust(position);
     }
-
-
-
-
-
 }
