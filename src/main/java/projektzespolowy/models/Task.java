@@ -20,6 +20,7 @@ public class Task {
     private Long id;
     private int MaxUserLimit;
     private String name;
+    private String color;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(

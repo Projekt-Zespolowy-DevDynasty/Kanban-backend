@@ -58,6 +58,7 @@ public class TaskController {
         Card card = cardRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Nie znaleziono karty o podanym ID: " + id));
         Task newTask = new Task();
         newTask.setName(taskName);
+        newTask.setColor("#f0f0f0");
         newTask.setMaxUserLimit(5);
         taskRepository.save(newTask);
         List<Task> tasks = card.getTasks();
@@ -80,6 +81,16 @@ public class TaskController {
 
         return taskRepository.save(task);
     }
+
+    @PutMapping("/task/changecolor/{taskId}/{color}")
+    public Task changeTaskColor(@PathVariable Long taskId, @PathVariable String color) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono zadania o podanym ID: " + taskId));
+        task.setColor(color);
+
+        return taskRepository.save(task);
+    }
+
 
 
 }
