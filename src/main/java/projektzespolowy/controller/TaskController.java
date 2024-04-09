@@ -82,8 +82,8 @@ public class TaskController {
         return taskRepository.save(task);
     }
 
-    @PutMapping("/task/changecolor/{taskId}/{color}")
-    public Task changeTaskColor(@PathVariable Long taskId, @PathVariable String color) {
+    @PutMapping("/task/changecolor/{taskId}")
+    public Task changeTaskColor(@PathVariable Long taskId, @RequestBody String color) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono zadania o podanym ID: " + taskId));
         task.setColor(color);
