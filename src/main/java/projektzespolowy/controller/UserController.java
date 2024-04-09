@@ -131,8 +131,8 @@ public class UserController {
 
         return ResponseEntity.ok(allUsers);
     }
-    @PatchMapping("/{userId}/setMaxTasksLimit")
-    public ResponseEntity<String> setMaxTasksLimit(@PathVariable Long userId, @RequestParam int maxTasksLimit) {
+    @PutMapping("/{userId}/setMaxTasksLimit")
+    public ResponseEntity<String> setMaxTasksLimit(@PathVariable Long userId, @RequestBody int maxTasksLimit) {
         Optional<Useer> userOptional = userRepository.findById(userId);
 
         if (!userOptional.isPresent()) {
@@ -155,5 +155,6 @@ public class UserController {
             return ResponseEntity.ok("Nowy limit zadań dla użytkownika: " + maxTasksLimit);
         }
     }
+
 
 }
