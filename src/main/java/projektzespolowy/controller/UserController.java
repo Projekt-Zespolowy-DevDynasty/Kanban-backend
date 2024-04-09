@@ -34,6 +34,7 @@ public class UserController {
     @PostMapping("/add")
     public Useer addUser(@RequestBody Useer user) {
         user.setColor(ColorGenerator.getRandomLightColor());
+        user.setMaxUserTasksLimit(3);
         return userRepository.save(user);
     }
     //Zwraca wszystkich uzytkownikow
@@ -130,4 +131,29 @@ public class UserController {
 
         return ResponseEntity.ok(allUsers);
     }
+    @PatchMapping("/{userId}/setMaxTasksLimit")
+    public ResponseEntity<String> setMaxTasksLimit(@PathVariable Long userId, @RequestParam int maxTasksLimit) {
+        Optional<Useer> userOptional = userRepository.findById(userId);
+
+        if (!userOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Useer user = userOptional.get();
+
+        if (maxTasksLimit == -1) {
+            user.setMaxUserTasksLimit(Integer.MAX_VALUE);
+        } else {
+            user.setMaxUserTasksLimit(maxTasksLimit);
+        }
+
+        userRepository.save(user);
+
+        if (maxTasksLimit == -1) {
+            return ResponseEntity.ok("Limit zadań dla użytkownika ustawiony na praktycznie nieograniczony.");
+        } else {
+            return ResponseEntity.ok("Nowy limit zadań dla użytkownika: " + maxTasksLimit);
+        }
+    }
+
 }

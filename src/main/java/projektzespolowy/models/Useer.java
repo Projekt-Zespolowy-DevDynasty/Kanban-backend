@@ -23,6 +23,7 @@ public class Useer {
 
     private String firstName;
     private String lastName;
+    private int maxUserTasksLimit;
     //@Column(unique = true)
     private String email;
     private String color;

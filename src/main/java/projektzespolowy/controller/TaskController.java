@@ -59,27 +59,11 @@ public class TaskController {
         Task newTask = new Task();
         newTask.setName(taskName);
         newTask.setColor("#f0f0f0");
-        newTask.setMaxUserLimit(5);
         taskRepository.save(newTask);
         List<Task> tasks = card.getTasks();
         tasks.add(newTask);
         card.setTasks(tasks);
         return cardRepository.save(card);
-    }
-    @PutMapping("/task/{taskId}/changeUserLimit")
-    public Task changeTaskUserLimit(@PathVariable Long taskId, @RequestParam int newLimit) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono zadania o podanym ID: " + taskId));
-
-        if (newLimit == -1) {
-            task.setMaxUserLimit(Integer.MAX_VALUE);
-        } else if (newLimit < 1) {
-            throw new IllegalArgumentException("Limit użytkowników musi być większy niż 0.");
-        } else {
-            task.setMaxUserLimit(newLimit);
-        }
-
-        return taskRepository.save(task);
     }
 
     @PutMapping("/task/changecolor/{taskId}")
