@@ -1,5 +1,6 @@
 package projektzespolowy.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +47,7 @@ public class CardController {
     }
 
 
+    @Operation(summary = "Zwraca wszystkie Karty")
     @GetMapping("/all")
     private ResponseEntity<List<CardDTO>> getAllCards() {
         List<Card> cards = cardService.getAllCards();

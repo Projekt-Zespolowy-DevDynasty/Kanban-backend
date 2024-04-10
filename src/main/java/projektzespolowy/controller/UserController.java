@@ -1,5 +1,6 @@
 package projektzespolowy.controller;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,7 +53,7 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/assignToTask/{taskId}")
-    public ResponseEntity<String> assignUserToTask(@PathVariable Long userId, @PathVariable Long taskId) {
+    public ResponseEntity<String> assignUserToTask(@Parameter(description = "Id Of User to Assign") @PathVariable Long userId, @PathVariable Long taskId) {
         Useer user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Task task = taskRepository.findById(taskId)
