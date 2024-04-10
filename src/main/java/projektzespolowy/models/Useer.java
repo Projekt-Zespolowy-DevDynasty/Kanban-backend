@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import java.util.List;
 
@@ -24,10 +26,9 @@ public class Useer {
     private String firstName;
     private String lastName;
     private int maxUserTasksLimit;
-    //@Column(unique = true)
     private String email;
     private String color;
 
-//    @ManyToMany(mappedBy = "useers", fetch = FetchType.EAGER)
-//    private List<Task> tasks;
+    @ManyToMany(mappedBy = "useers", fetch = FetchType.EAGER)
+    private List<Task> tasks;
 }
