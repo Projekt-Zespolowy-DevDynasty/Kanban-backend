@@ -58,7 +58,7 @@ public class TaskController {
         Card card = cardRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Nie znaleziono karty o podanym ID: " + id));
         Task newTask = new Task();
         newTask.setName(taskName);
-        newTask.setColor("#f0f0f0");
+        newTask.setColor("#8B8B8B");
         taskRepository.save(newTask);
         List<Task> tasks = card.getTasks();
         tasks.add(newTask);

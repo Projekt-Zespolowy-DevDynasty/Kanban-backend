@@ -150,7 +150,7 @@ public class UserController {
         userRepository.save(user);
 
         if (maxTasksLimit == -1) {
-            return ResponseEntity.ok("Limit zadań dla użytkownika ustawiony na praktycznie nieograniczony.");
+            return ResponseEntity.ok("userOptional zadań dla użytkownika ustawiony na praktycznie nieograniczony.");
         } else {
             return ResponseEntity.ok("Nowy limit zadań dla użytkownika: " + maxTasksLimit);
         }
