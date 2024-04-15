@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import projektzespolowy.models.Card;
 import projektzespolowy.models.Task;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,8 +21,7 @@ public class CardDTO {
     private int taskNumber;
     private int position;
 
-    private List<Long> taskIds;
-
+    private List<TaskDTO> tasks;
 
     public static CardDTO from(Card card) {
         CardDTO dto = new CardDTO();
@@ -32,10 +32,10 @@ public class CardDTO {
         dto.setPosition(card.getPosition());
 
         if (card.getTasks() != null) {
-            List<Long> taskIds = card.getTasks().stream()
-                    .map(Task::getId)
+            List<TaskDTO> taskDTOs = card.getTasks().stream()
+                    .map(TaskDTO::from)
                     .collect(Collectors.toList());
-            dto.setTaskIds(taskIds);
+            dto.setTasks(taskDTOs);
         }
         return dto;
     }
