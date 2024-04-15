@@ -18,6 +18,8 @@ public class TaskDTO {
     private Long id;
     private String name;
     private String color;
+    private int position;
+
     private List<UseerDTO> useers;
 
     public static TaskDTO from(Task task) {
@@ -25,6 +27,7 @@ public class TaskDTO {
         dto.setId(task.getId());
         dto.setName(task.getName());
         dto.setColor(task.getColor());
+        dto.setPosition(task.getPosition());
 
         if (task.getUseers() != null) {
             List<UseerDTO> userDTOs = task.getUseers().stream()

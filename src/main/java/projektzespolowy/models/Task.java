@@ -22,7 +22,7 @@ public class Task {
     private Long id;
     private String name;
     private String color;
-
+    private int position;
     @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(
             name = "task_useer",

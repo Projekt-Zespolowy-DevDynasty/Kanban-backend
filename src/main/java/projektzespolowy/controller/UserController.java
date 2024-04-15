@@ -11,6 +11,7 @@ import projektzespolowy.repository.TaskRepository;
 import projektzespolowy.repository.UserRepository;
 import projektzespolowy.service.UserService;
 import projektzespolowy.utils.ColorGenerator;
+import projektzespolowy.wyjatki.ResourceNotFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,11 +54,15 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/assignToTask/{taskId}")
-    public ResponseEntity<String> assignUserToTask(@Parameter(description = "Id Of User to Assign") @PathVariable Long userId, @PathVariable Long taskId) {
+    public ResponseEntity<String> assignUserToTask(@PathVariable Long userId, @PathVariable Long taskId) {
         Useer user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+
+        if (user.getTasks().size() >= user.getMaxUserTasksLimit()) {
+            return ResponseEntity.badRequest().body("Limit zadań użytkownika został osiągnięty");
+        }
 
         if (task.getUseers().contains(user)) {
             return ResponseEntity.badRequest().body("Użytkownik już przypisany do tego zadania");
