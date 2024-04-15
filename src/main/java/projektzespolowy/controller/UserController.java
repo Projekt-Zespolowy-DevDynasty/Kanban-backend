@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import projektzespolowy.DTO.UseerDTO;
+import projektzespolowy.DTO.UseerWithTasksDTO;
 import projektzespolowy.models.Task;
 import projektzespolowy.models.Useer;
 import projektzespolowy.repository.TaskRepository;
@@ -51,6 +52,12 @@ public class UserController {
                 .map(UseerDTO::from)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(userDTOs);
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<UseerWithTasksDTO> getUserById(@PathVariable Long id) {
+        Useer user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return ResponseEntity.ok(UseerWithTasksDTO.from(user));
     }
 
     @PostMapping("/{userId}/assignToTask/{taskId}")
