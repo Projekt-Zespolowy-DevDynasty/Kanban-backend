@@ -14,7 +14,8 @@ public class UseerDTO {
     private String firstName;
     private String lastName;
     private String email;
-    // Gettery i settery
+    private String color;
+    private int maxUserTasksLimit;
 
     public static UseerDTO from(Useer user) {
         UseerDTO dto = new UseerDTO();

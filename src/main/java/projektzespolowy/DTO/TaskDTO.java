@@ -18,7 +18,7 @@ public class TaskDTO {
     private Long id;
     private String name;
     private String color;
-    private List<UseerDTO> users;
+    private List<UseerDTO> useers;
 
     public static TaskDTO from(Task task) {
         TaskDTO dto = new TaskDTO();
@@ -30,7 +30,7 @@ public class TaskDTO {
             List<UseerDTO> userDTOs = task.getUseers().stream()
                     .map(UseerDTO::from)
                     .collect(Collectors.toList());
-            dto.setUsers(userDTOs);
+            dto.setUseers(userDTOs);
         }
 
         return dto;

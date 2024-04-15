@@ -18,7 +18,7 @@ public class RowWithAllCardsDTO {
     private Long id;
     private String name;
     private int position;
-    private List<CardDTO> cardsInRow;
+    private List<CardDTO> cardsinrow;
 
     public static RowWithAllCardsDTO from(RowWithAllCards rowWithAllCards) {
         RowWithAllCardsDTO dto = new RowWithAllCardsDTO();
@@ -27,10 +27,10 @@ public class RowWithAllCardsDTO {
         dto.setPosition(rowWithAllCards.getPosition());
 
         if (rowWithAllCards.getCardsinrow() != null) {
-            List<CardDTO> cardsInRow = rowWithAllCards.getCardsinrow().stream()
+            List<CardDTO> cardsinrow = rowWithAllCards.getCardsinrow().stream()
                     .map(CardDTO::from)
                     .collect(Collectors.toList());
-            dto.setCardsInRow(cardsInRow);
+            dto.setCardsinrow(cardsinrow);
         }
 
         return dto;
