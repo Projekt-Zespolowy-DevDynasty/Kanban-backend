@@ -175,6 +175,22 @@ public class CardController {
 
         return ResponseEntity.noContent().build();
     }
+    @PutMapping("/{sourceCardId}/move-task/{taskId}/to-card/{destinationCardId}")
+    private void moveTaskToAnotherCard(@PathVariable Long sourceCardId, @PathVariable Long taskId, @PathVariable Long destinationCardId) {
+        Card sourceCard = cardRepository.findById(sourceCardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + sourceCardId));
 
+        Card destinationCard = cardRepository.findById(destinationCardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + destinationCardId));
+
+        Task taskToMove = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zadania numer: " + taskId));
+
+        sourceCard.getTasks().remove(taskToMove);
+        destinationCard.getTasks().add(taskToMove);
+
+        cardRepository.save(sourceCard);
+        cardRepository.save(destinationCard);
+    }
 
 }
