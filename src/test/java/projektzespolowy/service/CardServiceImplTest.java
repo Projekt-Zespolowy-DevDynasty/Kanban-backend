@@ -21,17 +21,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CardServiceImplTest {
 
-    @Mock
-    CardRepository cardRepository;
-    CardServiceImpl cardService;
-    @BeforeEach
-    void init() {
-        cardService = new CardServiceImpl(cardRepository);
-    }
 
     @Test
     void getAllCards() {
-
 
     }
 }

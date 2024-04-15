@@ -71,6 +71,11 @@ public class TaskController {
         List<Task> tasks = card.getTasks();
         tasks.add(newTask);
         card.setTasks(tasks);
+        tasks = card.getTasks();
+        for (Task task : tasks) {
+            task.setPosition(tasks.indexOf(task));
+            taskRepository.save(task);
+        }
 
         cardRepository.save(card);
 

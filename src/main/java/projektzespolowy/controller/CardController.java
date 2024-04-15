@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -178,26 +179,7 @@ public class CardController {
     @PutMapping("/{sourceCardId}/move-task/{taskId}/to-card/{destinationCardId}/at-index/{index}")
     private void moveTaskToAnotherCard(@PathVariable Long sourceCardId, @PathVariable Long taskId,
                                        @PathVariable Long destinationCardId, @PathVariable int index) {
-        Card sourceCard = cardRepository.findById(sourceCardId)
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + sourceCardId));
-
-        Card destinationCard = cardRepository.findById(destinationCardId)
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty numer: " + destinationCardId));
-
-        Task taskToMove = taskRepository.findById(taskId)
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zadania numer: " + taskId));
-
-        sourceCard.getTasks().remove(taskToMove);
-        destinationCard.getTasks().add(index, taskToMove);
-
-
-        for (int i = index + 1; i < destinationCard.getTasks().size(); i++) {
-            Task task = destinationCard.getTasks().get(i);
-            task.setPosition(i);
-        }
-
-        cardRepository.save(sourceCard);
-        cardRepository.save(destinationCard);
+        cardService.moveTask(sourceCardId, taskId, destinationCardId, index);
     }
 
 

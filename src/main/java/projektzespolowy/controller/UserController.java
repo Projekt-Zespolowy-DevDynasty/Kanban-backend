@@ -64,6 +64,7 @@ public class UserController {
             return ResponseEntity.badRequest().body("Limit zadań użytkownika został osiągnięty");
         }
 
+
         if (task.getUseers().contains(user)) {
             return ResponseEntity.badRequest().body("Użytkownik już przypisany do tego zadania");
         }
