@@ -23,6 +23,7 @@ public class UseerDTO {
         dto.setFirstName(user.getFirstName());
         dto.setLastName(user.getLastName());
         dto.setEmail(user.getEmail());
+        dto.setMaxUserTasksLimit(user.getMaxUserTasksLimit());
         return dto;
     }
 }

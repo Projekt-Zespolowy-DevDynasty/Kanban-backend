@@ -34,15 +34,16 @@ public class UserController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<UseerDTO> addUser(@RequestBody UseerDTO userDTO) {
+    public ResponseEntity<UseerDTO> addUser(@RequestBody Useer userDTO) {
         Useer user = new Useer();
         user.setFirstName(userDTO.getFirstName());
         user.setLastName(userDTO.getLastName());
         user.setEmail(userDTO.getEmail());
         user.setColor(ColorGenerator.getRandomLightColor());
         user.setMaxUserTasksLimit(3);
-        Useer savedUser = userRepository.save(user);
-        return ResponseEntity.ok(UseerDTO.from(savedUser));
+        userRepository.save(user);
+        UseerDTO userR = UseerDTO.from(user);
+        return ResponseEntity.ok(userR);
     }
 
     @GetMapping("/get")
@@ -68,7 +69,8 @@ public class UserController {
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         if (user.getTasks().size() >= user.getMaxUserTasksLimit()) {
-            return ResponseEntity.badRequest().body("Limit zadań użytkownika został osiągnięty");
+            throw new IllegalArgumentException("Nazwa karty nie może być pusta ani składać się wyłącznie z białych znaków.");
+            //jak przekorczy to response entity  ze statusem 4xx
         }
 
 
