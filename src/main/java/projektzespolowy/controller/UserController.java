@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-
+// http://localhost:8080/swagger-ui/index.html#
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
     private final UserService userService;
