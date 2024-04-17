@@ -2,6 +2,7 @@ package projektzespolowy.controller;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import projektzespolowy.DTO.UseerDTO;
@@ -135,13 +136,17 @@ public class UserController {
         Useer user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (maxTasksLimit == -1) {
-            user.setMaxUserTasksLimit(Integer.MAX_VALUE);
-        } else {
-            user.setMaxUserTasksLimit(maxTasksLimit);
+        if(user.getTasks().size() > maxTasksLimit) {
+            return ResponseEntity.status(HttpStatusCode.valueOf(415)).body("Użytkownik ma więcej zadań niż nowy limit");
         }
+
+        if(maxTasksLimit < 0) {
+            return ResponseEntity.status(HttpStatusCode.valueOf(414)).body("Limit zadań nie może być ujemny");
+        }
+
+        user.setMaxUserTasksLimit(maxTasksLimit);
         userRepository.save(user);
-        return ResponseEntity.ok(maxTasksLimit == -1 ? "Limit zadań dla użytkownika ustawiony na praktycznie nieograniczony." : "Nowy limit zadań dla użytkownika: " + maxTasksLimit);
+        return ResponseEntity.ok("Nowy limit zadań dla użytkownika: " + maxTasksLimit);
     }
 
 
