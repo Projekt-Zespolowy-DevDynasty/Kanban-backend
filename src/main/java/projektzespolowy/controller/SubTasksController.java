@@ -33,7 +33,11 @@ public class SubTasksController {
         subTasksService.deleteSubTask(subTaskId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
+    @GetMapping("/{taskId}/percentageFinishedSubTasks")
+    public ResponseEntity<Double> getPercentageFinishedSubTasks(@PathVariable Long taskId) {
+        double percentage = subTasksService.calculatePercentageOfFinishedSubTasks(taskId);
+        return ResponseEntity.ok(percentage);
+    }
 
     @PutMapping("/{subTaskId}/color")
     public ResponseEntity<SubTasksDTO> updateSubTaskColor(@PathVariable Long subTaskId, @RequestParam String color) {

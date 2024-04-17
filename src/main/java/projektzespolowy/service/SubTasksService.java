@@ -155,6 +155,17 @@ public class SubTasksService {
         }
     }
 
+    public int calculatePercentageOfFinishedSubTasks(Long taskId) {
+        int finishedSubTasksCount = countFinishedSubTasks(taskId);
+        int allSubTasksCount = countAllSubTasks(taskId);
+
+        if (allSubTasksCount == 0) {
+            return 0;
+        }
+
+        double percentage = ((double) finishedSubTasksCount / allSubTasksCount) * 100;
+        return (int) Math.round(percentage);
+    }
 
 
 
