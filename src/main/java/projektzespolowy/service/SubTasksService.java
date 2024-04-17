@@ -25,20 +25,19 @@ public class SubTasksService {
         this.taskRepository = taskRepository;
     }
 
-    public SubTasksDTO createSubTask(Long taskId, SubTasksDTO subTaskDTO) {
+    public SubTasksDTO createSubTask(Long taskId, String name) {
         Optional<Task> taskOptional = taskRepository.findById(taskId);
+        SubTasksDTO subTaskDTO = new SubTasksDTO();
+        subTaskDTO.setName(name);
+        subTaskDTO.setFinished(false);
         if (taskOptional.isPresent()) {
             Task task = taskOptional.get();
-
-
             List<SubTasks> subTasks = task.getSubTasks();
-
 
             int maxPosition = subTasks.stream()
                     .mapToInt(SubTasks::getPosition)
                     .max()
                     .orElse(-1);
-
 
             int newPosition = maxPosition + 1;
 

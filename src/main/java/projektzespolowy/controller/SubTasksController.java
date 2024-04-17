@@ -19,8 +19,9 @@ public class SubTasksController {
     }
 
     @PostMapping("/{taskId}")
-    public ResponseEntity<SubTasksDTO> createSubTask(@PathVariable Long taskId, @RequestBody SubTasksDTO subTaskDTO) {
-        SubTasksDTO createdSubTask = subTasksService.createSubTask(taskId, subTaskDTO);
+    public ResponseEntity<SubTasksDTO> createSubTask(@PathVariable Long taskId, @RequestBody String name) {
+
+        SubTasksDTO createdSubTask = subTasksService.createSubTask(taskId, name);
         if (createdSubTask != null) {
             return new ResponseEntity<>(createdSubTask, HttpStatus.CREATED);
         } else {
