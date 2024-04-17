@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import projektzespolowy.DTO.SubTasksDTO;
 import projektzespolowy.service.SubTasksService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/subtasks")
 public class SubTasksController {
@@ -79,5 +81,13 @@ public class SubTasksController {
     public ResponseEntity<Integer> countAllSubTasks(@PathVariable Long taskId) {
         int count = subTasksService.countAllSubTasks(taskId);
         return new ResponseEntity<>(count, HttpStatus.OK);
+    }
+    @GetMapping("/tasks/{taskId}/subtasks")
+    public ResponseEntity<List<SubTasksDTO>> getSubTasksByTaskId(@PathVariable Long taskId) {
+        List<SubTasksDTO> subTasks = subTasksService.getSubTasksByTaskId(taskId);
+        if (subTasks.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(subTasks, HttpStatus.OK);
     }
 }

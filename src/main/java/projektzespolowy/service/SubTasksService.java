@@ -183,4 +183,14 @@ public class SubTasksService {
                 .map(SubTasksDTO::from)
                 .collect(Collectors.toList());
     }
+    public List<SubTasksDTO> getSubTasksByTaskId(Long taskId) {
+        Optional<Task> taskOptional = taskRepository.findById(taskId);
+        if (taskOptional.isPresent()) {
+            Task task = taskOptional.get();
+            List<SubTasks> subTasks = task.getSubTasks();
+            return toSubTaskDTOList(subTasks);
+        } else {
+            return List.of();
+        }
+    }
 }

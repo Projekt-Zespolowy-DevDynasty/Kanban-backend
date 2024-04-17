@@ -70,7 +70,7 @@ public class UserController {
 
         if (user.getTasks().size() >= user.getMaxUserTasksLimit()) {
             throw new IllegalArgumentException("Nazwa karty nie może być pusta ani składać się wyłącznie z białych znaków.");
-            //jak przekorczy to response entity  ze statusem 4xx
+
         }
 
 
