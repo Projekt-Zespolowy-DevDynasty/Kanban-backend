@@ -10,7 +10,7 @@ import projektzespolowy.service.SubTasksService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/subtasks")
+@RequestMapping("api/subtasks")
 public class SubTasksController {
 
     private final SubTasksService subTasksService;
@@ -85,9 +85,6 @@ public class SubTasksController {
     @GetMapping("/tasks/{taskId}/subtasks")
     public ResponseEntity<List<SubTasksDTO>> getSubTasksByTaskId(@PathVariable Long taskId) {
         List<SubTasksDTO> subTasks = subTasksService.getSubTasksByTaskId(taskId);
-        if (subTasks.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
         return new ResponseEntity<>(subTasks, HttpStatus.OK);
     }
 }

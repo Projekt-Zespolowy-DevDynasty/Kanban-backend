@@ -19,7 +19,7 @@ public class TaskDTO {
     private String color;
     private int position;
     private List<UseerDTO> useers;
-    private List<SubTasksDTO> subtasks;
+    private List<SubTasksDTO> subTasks;
 
     public static TaskDTO from(Task task) {
         TaskDTO dto = new TaskDTO();
@@ -39,7 +39,7 @@ public class TaskDTO {
             List<SubTasksDTO> subTasksDTOs = task.getSubTasks().stream()
                     .map(SubTasksDTO::from)
                     .collect(Collectors.toList());
-            dto.setSubtasks(subTasksDTOs);
+            dto.setSubTasks(subTasksDTOs);
         }
 
         return dto;
