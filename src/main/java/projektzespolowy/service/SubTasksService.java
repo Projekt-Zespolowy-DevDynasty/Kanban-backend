@@ -1,0 +1,176 @@
+package projektzespolowy.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import projektzespolowy.DTO.SubTasksDTO;
+import projektzespolowy.models.SubTasks;
+import projektzespolowy.models.Task;
+import projektzespolowy.repository.SubTasksRepository;
+import projektzespolowy.repository.TaskRepository;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+@Service
+public class SubTasksService {
+
+    private final SubTasksRepository subTasksRepository;
+    private final TaskRepository taskRepository;
+
+    @Autowired
+    public SubTasksService(SubTasksRepository subTasksRepository, TaskRepository taskRepository) {
+        this.subTasksRepository = subTasksRepository;
+        this.taskRepository = taskRepository;
+    }
+
+    public SubTasksDTO createSubTask(Long taskId, SubTasksDTO subTaskDTO) {
+        Optional<Task> taskOptional = taskRepository.findById(taskId);
+        if (taskOptional.isPresent()) {
+            Task task = taskOptional.get();
+
+
+            List<SubTasks> subTasks = task.getSubTasks();
+
+
+            int maxPosition = subTasks.stream()
+                    .mapToInt(SubTasks::getPosition)
+                    .max()
+                    .orElse(-1);
+
+
+            int newPosition = maxPosition + 1;
+
+
+            subTaskDTO.setPosition(newPosition);
+
+            SubTasks subTask = toSubTask(subTaskDTO);
+            subTask.setTask(task);
+            SubTasks savedSubTask = subTasksRepository.save(subTask);
+            return SubTasksDTO.from(savedSubTask);
+        } else {
+            return null;
+        }
+    }
+
+
+
+    public SubTasksDTO updateSubTaskColor(Long subTaskId, String color) {
+        Optional<SubTasks> subTaskOptional = subTasksRepository.findById(subTaskId);
+        if (subTaskOptional.isPresent()) {
+            SubTasks subTask = subTaskOptional.get();
+            subTask.setColor(color);
+            SubTasks updatedSubTask = subTasksRepository.save(subTask);
+            return SubTasksDTO.from(updatedSubTask);
+        } else {
+            return null;
+        }
+    }
+    public int countFinishedSubTasks(Long taskId) {
+        Optional<Task> taskOptional = taskRepository.findById(taskId);
+        if (taskOptional.isPresent()) {
+            Task task = taskOptional.get();
+            List<SubTasks> subTasks = task.getSubTasks();
+
+
+            List<SubTasksDTO> subTasksDTOs = subTasks.stream()
+                    .map(SubTasksDTO::from)
+                    .collect(Collectors.toList());
+
+
+            long finishedCount = subTasksDTOs.stream()
+                    .filter(SubTasksDTO::isFinished)
+                    .count();
+
+            return (int) finishedCount;
+        } else {
+
+            return 0;
+        }
+    }
+    public SubTasksDTO deleteSubTask(Long subTaskId) {
+        Optional<SubTasks> subTaskOptional = subTasksRepository.findById(subTaskId);
+        if (subTaskOptional.isPresent()) {
+            SubTasks subTask = subTaskOptional.get();
+            Task task = subTask.getTask();
+            List<SubTasks> subTasks = task.getSubTasks();
+
+            // Usunięcie subtaska
+            subTasks.remove(subTask);
+            subTasksRepository.delete(subTask);
+
+            // Zaktualizowanie pozycji dla pozostałych subtasków
+            IntStream.range(0, subTasks.size())
+                    .forEach(i -> subTasks.get(i).setPosition(i));
+
+            // Zapisz zmienione subtaski
+            subTasksRepository.saveAll(subTasks);
+
+            return SubTasksDTO.from(subTask);
+        } else {
+            return null;
+        }
+    }
+
+
+    public SubTasksDTO updateSubTaskFinished(Long subTaskId, boolean finished) {
+        Optional<SubTasks> subTaskOptional = subTasksRepository.findById(subTaskId);
+        if (subTaskOptional.isPresent()) {
+            SubTasks subTask = subTaskOptional.get();
+            subTask.setFinished(finished);
+
+            SubTasks updatedSubTask = subTasksRepository.save(subTask);
+
+            return SubTasksDTO.from(updatedSubTask);
+        } else {
+
+            return null;
+        }
+    }
+
+    public SubTasksDTO updateSubTaskName(Long subTaskId, String Name) {
+        Optional<SubTasks> subTaskOptional = subTasksRepository.findById(subTaskId);
+        if (subTaskOptional.isPresent()) {
+            SubTasks subTask = subTaskOptional.get();
+            subTask.setName(Name);
+            subTasksRepository.save(subTask);
+
+
+            return SubTasksDTO.from(subTask);
+        } else {
+
+            return null;
+        }
+    }
+    public int countAllSubTasks(Long taskId) {
+        Optional<Task> taskOptional = taskRepository.findById(taskId);
+        if (taskOptional.isPresent()) {
+            Task task = taskOptional.get();
+            List<SubTasks> subTasks = task.getSubTasks();
+            return subTasks.size();
+        } else {
+
+            return 0;
+        }
+    }
+
+
+
+
+    private SubTasks toSubTask(SubTasksDTO subTaskDTO) {
+        SubTasks subTask = new SubTasks();
+        subTask.setId(subTaskDTO.getId());
+        subTask.setName(subTaskDTO.getName());
+        subTask.setFinished(subTaskDTO.isFinished());
+        subTask.setPosition(subTaskDTO.getPosition());
+        subTask.setColor(subTaskDTO.getColor());
+        return subTask;
+    }
+
+    private List<SubTasksDTO> toSubTaskDTOList(List<SubTasks> subTasks) {
+        return subTasks.stream()
+                .map(SubTasksDTO::from)
+                .collect(Collectors.toList());
+    }
+}

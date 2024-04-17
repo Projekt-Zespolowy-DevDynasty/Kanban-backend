@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import projektzespolowy.models.Task;
 import projektzespolowy.models.Useer;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,8 +18,8 @@ public class TaskDTO {
     private String name;
     private String color;
     private int position;
-
     private List<UseerDTO> useers;
+    private List<SubTasksDTO> subtasks;
 
     public static TaskDTO from(Task task) {
         TaskDTO dto = new TaskDTO();
@@ -36,6 +35,14 @@ public class TaskDTO {
             dto.setUseers(userDTOs);
         }
 
+        if (task.getSubTasks() != null) {
+            List<SubTasksDTO> subTasksDTOs = task.getSubTasks().stream()
+                    .map(SubTasksDTO::from)
+                    .collect(Collectors.toList());
+            dto.setSubtasks(subTasksDTOs);
+        }
+
         return dto;
     }
 }
+
