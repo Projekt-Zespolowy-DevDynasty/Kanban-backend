@@ -45,6 +45,8 @@ public class RowWithAllCardsService {
                         for (Task task : card.getTasks()) {
                             Task newTask = new Task(); // Załóżmy, że konstruktor Task przyjmuje te parametry
                             newTask.setName(task.getName());
+                            newTask.setColor(task.getColor());
+                            newTask.setPosition(leftCard.getTasks().size());
                             taskRepository.save(newTask); // Zapisz nowy task
                             newTasks.add(newTask);
                         }

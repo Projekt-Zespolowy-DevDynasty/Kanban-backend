@@ -53,8 +53,9 @@ public class SubTasksController {
     }
 
     @PutMapping("/{subTaskId}/finished")
-    public ResponseEntity<SubTasksDTO> updateSubTaskFinished(@PathVariable Long subTaskId, @RequestParam boolean finished) {
-        SubTasksDTO updatedSubTask = subTasksService.updateSubTaskFinished(subTaskId, finished);
+    public ResponseEntity<SubTasksDTO> updateSubTaskFinished(@PathVariable Long subTaskId, @RequestParam String finished) {
+        boolean finishedBool = Boolean.parseBoolean(finished);
+        SubTasksDTO updatedSubTask = subTasksService.updateSubTaskFinished(subTaskId, finishedBool);
         if (updatedSubTask != null) {
             return new ResponseEntity<>(updatedSubTask, HttpStatus.OK);
         } else {
