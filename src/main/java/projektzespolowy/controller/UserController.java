@@ -24,32 +24,24 @@ import java.util.stream.Collectors;
 public class UserController {
 // http://localhost:8080/swagger-ui/index.html#
     private final UserRepository userRepository;
-    private final TaskRepository taskRepository;
     private final UserService userService;
 
     @Autowired
-    public UserController(UserRepository userRepository, TaskRepository taskRepository, UserService userService) {
+    public UserController(UserRepository userRepository, UserService userService) {
         this.userRepository = userRepository;
-        this.taskRepository = taskRepository;
         this.userService = userService;
     }
 
     @PostMapping("/add")
-    public ResponseEntity<UseerDTO> addUser(@RequestBody Useer userDTO) {
-        Useer user = new Useer();
-        user.setFirstName(userDTO.getFirstName());
-        user.setLastName(userDTO.getLastName());
-        user.setEmail(userDTO.getEmail());
-        user.setColor(ColorGenerator.getRandomLightColor());
-        user.setMaxUserTasksLimit(3);
-        userRepository.save(user);
-        UseerDTO userR = UseerDTO.from(user);
-        return ResponseEntity.ok(userR);
+    public ResponseEntity<UseerDTO> addUser(@RequestBody Useer user) {
+        Useer userVar = userService.addUser(user);
+        UseerDTO userToDto = UseerDTO.from(userVar);
+        return ResponseEntity.ok(userToDto);
     }
 
     @GetMapping("/get")
     public ResponseEntity<List<UseerDTO>> getAllUsers() {
-        List<Useer> users = userRepository.findAll();
+        List<Useer> users = userService.getAllUsers();
         List<UseerDTO> userDTOs = users.stream()
                 .map(UseerDTO::from)
                 .collect(Collectors.toList());
@@ -57,47 +49,20 @@ public class UserController {
     }
     @GetMapping("/{id}")
     public ResponseEntity<UseerWithTasksDTO> getUserById(@PathVariable Long id) {
-        Useer user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Useer user = userService.getUserById(id);
         return ResponseEntity.ok(UseerWithTasksDTO.from(user));
     }
 
     @PostMapping("/{userId}/assignToTask/{taskId}")
     public ResponseEntity<String> assignUserToTask(@PathVariable Long userId, @PathVariable Long taskId) {
-        Useer user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
-
-        if (user.getTasks().size() >= user.getMaxUserTasksLimit()) {
-            throw new IllegalArgumentException("Nazwa karty nie może być pusta ani składać się wyłącznie z białych znaków.");
-
-        }
-
-
-        if (task.getUseers().contains(user)) {
-            return ResponseEntity.badRequest().body("Użytkownik już przypisany do tego zadania");
-        }
-
-        task.getUseers().add(user);
-        taskRepository.save(task);
-        return ResponseEntity.ok().body("Przypisano użytkownika do zadania");
+        String message = userService.assignUserToTask(userId, taskId);
+        return ResponseEntity.ok().body(message);
     }
 
     @DeleteMapping("/{userId}/removeFromTask/{taskId}")
     public ResponseEntity<String> removeUserFromTask(@PathVariable Long userId, @PathVariable Long taskId) {
-        Useer user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
-
-        boolean removed = task.getUseers().remove(user);
-        if (!removed) {
-            return ResponseEntity.badRequest().body("Użytkownik nie był dodany do tego zadania");
-        }
-
-        taskRepository.save(task);
-        return ResponseEntity.ok().body("Usunięto użytkownika z zadania");
+        String message = userService.removeUserFromTask(userId, taskId);
+        return ResponseEntity.ok().body(message);
     }
 
     @DeleteMapping("/{id}")
@@ -108,9 +73,9 @@ public class UserController {
 
     @GetMapping("/{taskId}/usersAssigned")
     public ResponseEntity<List<UseerDTO>> getUsersAssignedToTask(@PathVariable Long taskId) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
-        List<UseerDTO> usersAssignedDTOs = task.getUseers().stream()
+        List<Useer> usersInTask = userService.getUsersAssignedToTask(taskId);
+
+        List<UseerDTO> usersAssignedDTOs = usersInTask.stream()
                 .map(UseerDTO::from)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(usersAssignedDTOs);
@@ -119,17 +84,13 @@ public class UserController {
 
     @GetMapping("/{taskId}/usersNotAssigned")
     public ResponseEntity<List<UseerDTO>> getUsersNotAssignedToTask(@PathVariable Long taskId) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
-        List<Useer> allUsers = userRepository.findAll();
-        List<Useer> usersAssigned = task.getUseers();
 
-        List<UseerDTO> usersNotAssignedDTOs = allUsers.stream()
-                .filter(user -> !usersAssigned.contains(user))
+        List<Useer> usersNotAssigned = userService.getUsersNotAssignedToTask(taskId);
+        List<UseerDTO> usersNotAssignedDTOs = usersNotAssigned.stream()
                 .map(UseerDTO::from)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(usersNotAssignedDTOs);
-}
+    }
 
     @PutMapping("/{userId}/setMaxTasksLimit")
     public ResponseEntity<String> setMaxTasksLimit(@PathVariable Long userId, @RequestBody int maxTasksLimit) {
