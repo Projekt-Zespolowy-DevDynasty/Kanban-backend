@@ -42,15 +42,6 @@ public class SubTasksController {
         return ResponseEntity.ok(percentage);
     }
 
-    @PutMapping("/{subTaskId}/color")
-    public ResponseEntity<SubTasksDTO> updateSubTaskColor(@PathVariable Long subTaskId, @RequestParam String color) {
-        SubTasksDTO updatedSubTask = subTasksService.updateSubTaskColor(subTaskId, color);
-        if (updatedSubTask != null) {
-            return new ResponseEntity<>(updatedSubTask, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
 
     @PutMapping("/{subTaskId}/finished")
     public ResponseEntity<SubTasksDTO> updateSubTaskFinished(@PathVariable Long subTaskId, @RequestParam String finished) {

@@ -1,87 +1,197 @@
 package projektzespolowy.service;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import projektzespolowy.models.Card;
 import projektzespolowy.models.RowWithAllCards;
-import projektzespolowy.models.Task;
 import projektzespolowy.repository.CardRepository;
 import projektzespolowy.repository.RowRepository;
-import projektzespolowy.repository.TaskRepository;
 import projektzespolowy.wyjatki.ResourceNotFoundException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class RowWithAllCardsService {
 
-    @Autowired
-    private RowRepository rowRepository;
-    @Autowired
-    private TaskRepository taskRepository;
-    @Autowired
-    private CardRepository cardRepository;
+    private final RowRepository rowRepository;
+    private final CardRepository cardRepository;
 
-    @Transactional
+    @Autowired
+    public RowWithAllCardsService(RowRepository rowRepository, CardRepository cardRepository) {
+        this.rowRepository = rowRepository;
+        this.cardRepository = cardRepository;
+    }
+
+    public List<RowWithAllCards> getAllRows() {
+        return rowRepository.findAll();
+    }
+
+    public RowWithAllCards getRowByPosition(Integer rowPosition) {
+        return rowRepository.findByPosition(rowPosition)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o pozycji: " + rowPosition));
+    }
+
+    public RowWithAllCards getRowById(Long rowId) {
+        return rowRepository.findById(rowId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o identyfikatorze: " + rowId));
+    }
+
+    public Long getRowCount() {
+        return rowRepository.count();
+    }
+
+    public RowWithAllCards addRow(String name) {
+        RowWithAllCards lastRow = rowRepository.findTopByOrderByPositionDesc();
+        RowWithAllCards row = new RowWithAllCards();
+
+        int newPosition = 0;
+        if (lastRow != null) {
+            newPosition = lastRow.getPosition() + 1;
+        }
+        row.setPosition(newPosition);
+
+        RowWithAllCards cardsoftoprow = rowRepository.findByPosition(0).orElseThrow(
+                () -> new ResourceNotFoundException("Nie znaleziono wiersza o pozycji: 0")
+        );
+        List<Card> copiedCards = new ArrayList<>();
+
+        for (Card column : cardsoftoprow.getCardsinrow()) {
+            Card copiedCard = new Card();
+            copiedCard.setName(column.getName());
+            copiedCard.setPosition(column.getPosition());
+            copiedCard.setMaxTasksLimit(column.getMaxTasksLimit());
+            cardRepository.save(copiedCard);
+            copiedCards.add(copiedCard);
+        }
+        row.setCardsinrow(copiedCards);
+
+        // Ustawienie nazwy nowego wiersza
+        row.setName(name);
+        return rowRepository.save(row);
+    }
+
+    public void removeRow(Long rowId) {
+        RowWithAllCards row = getRowById(rowId);
+
+        // Pobierz listę kart, które należy usunąć
+        List<Card> cardsToDelete = row.getCardsinrow();
+        for (Card card : cardsToDelete) {
+            // Usuń każdą kartę
+            cardRepository.delete(card);
+        }
+
+        // Usuń wiersz
+        rowRepository.delete(row);
+    }
+
+    public RowWithAllCards renameRow(Long rowId, String newName) {
+        RowWithAllCards row = getRowById(rowId);
+        row.setName(newName);
+        return rowRepository.save(row);
+    }
+    public void moveColumn(Integer sourceColumnPosition, Integer targetColumnPosition) {
+        // Pobierz wszystkie wiersze
+        List<RowWithAllCards> allRows = rowRepository.findAll();
+
+        // Iteruj przez każdy wiersz
+        for (RowWithAllCards row : allRows) {
+            List<Card> cardsInCurrentRow = row.getCardsinrow();
+
+            // Znajdź kartę o pozycji źródłowej i przenieś ją na pozycję docelową
+            for (Card card : cardsInCurrentRow) {
+                if (card.getPosition() == sourceColumnPosition) {
+                    card.setPosition(targetColumnPosition);
+                } else if (sourceColumnPosition < targetColumnPosition && sourceColumnPosition < card.getPosition() && card.getPosition() <= targetColumnPosition) {
+                    card.setPosition(card.getPosition() - 1);
+                } else if (targetColumnPosition < sourceColumnPosition && targetColumnPosition <= card.getPosition() && card.getPosition() < sourceColumnPosition) {
+                    card.setPosition(card.getPosition() + 1);
+                }
+            }
+        }
+
+        // Zapisz zmiany w bazie danych
+        rowRepository.saveAll(allRows);
+    }
+
+    public RowWithAllCards moveRowUp(Long rowId) {
+        RowWithAllCards row = rowRepository.findById(rowId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o identyfikatorze: " + rowId));
+
+        if (row.getPosition() == 1) {
+            throw new UnsupportedOperationException("Wiersz jest już na początku i nie może być przesunięty w górę.");
+        }
+
+        // Pobierz poprzedni wiersz
+        RowWithAllCards previousRow = rowRepository.findByPosition(row.getPosition() - 1)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono poprzedniego wiersza."));
+
+        // Zamień pozycje obecnego wiersza i poprzedniego wiersza
+        int currentPosition = row.getPosition();
+        row.setPosition(previousRow.getPosition());
+        previousRow.setPosition(currentPosition);
+
+        // Zapisz zmiany w bazie danych
+        rowRepository.save(row);
+        rowRepository.save(previousRow);
+
+        return row;
+    }
+
+    public RowWithAllCards moveRowDown(Long rowId) {
+        RowWithAllCards row = rowRepository.findById(rowId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o identyfikatorze: " + rowId));
+
+        if (row.getPosition() == rowRepository.count() - 1) {
+            throw new UnsupportedOperationException("Wiersz jest już na końcu i nie może być przesunięty w dół.");
+        }
+
+        // Pobierz następny wiersz
+        RowWithAllCards nextRow = rowRepository.findByPosition(row.getPosition() + 1)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono następnego wiersza."));
+
+        // Zamień pozycje obecnego wiersza i następnego wiersza
+        int currentPosition = row.getPosition();
+        row.setPosition(nextRow.getPosition());
+        nextRow.setPosition(currentPosition);
+
+        // Zapisz zmiany w bazie danych
+        rowRepository.save(row);
+        rowRepository.save(nextRow);
+
+        return row;
+    }
+
     public void removeColumnAndAdjust(int position) {
-        List<RowWithAllCards> rows = rowRepository.findAll();
+        // Pobierz wszystkie wiersze
+        List<RowWithAllCards> allRows = rowRepository.findAll();
 
-        for (RowWithAllCards row : rows) {
-            row.getCardsinrow().sort((c1, c2) -> Integer.compare(c1.getPosition(), c2.getPosition()));
-            Card toRemove = null;
-            for (int i = 0; i < row.getCardsinrow().size(); i++) {
-                Card card = row.getCardsinrow().get(i);
+        // Iteruj przez każdy wiersz
+        for (RowWithAllCards row : allRows) {
+            List<Card> cardsInCurrentRow = row.getCardsinrow();
+
+            // Usuń kartę na podanej pozycji
+            for (Card card : cardsInCurrentRow) {
                 if (card.getPosition() == position) {
-                    toRemove = card;
-                    // TODO: nie kopiowac taskow tylko caly obiekt task przeniesc do karty po lewej
-                    // Skopiuj i przenieś taski do karty po lewej, jeśli istnieje
-                    if (i > 0) {
-                        Card leftCard = row.getCardsinrow().get(i - 1);
-                        List<Task> newTasks = new ArrayList<>();
-                        for (Task task : card.getTasks()) {
-                            Task newTask = new Task(); // Załóżmy, że konstruktor Task przyjmuje te parametry
-                            newTask.setName(task.getName());
-                            newTask.setColor(task.getColor());
-                            newTask.setPosition(leftCard.getTasks().size());
-                            taskRepository.save(newTask); // Zapisz nowy task
-                            newTasks.add(newTask);
-                        }
-                        leftCard.getTasks().addAll(newTasks); // Dodaj nowe taski do karty po lewej
-                    }
-                } else if (card.getPosition() > position) {
+                    cardRepository.delete(card);
+                    break;
+                }
+            }
+
+            // Dostosuj pozycje kart w wierszu
+            cardsInCurrentRow.removeIf(card -> card.getPosition() == position);
+            for (Card card : cardsInCurrentRow) {
+                if (card.getPosition() > position) {
                     card.setPosition(card.getPosition() - 1);
                 }
             }
-            if (toRemove != null) {
-                row.getCardsinrow().remove(toRemove);
-            }
         }
 
-        rowRepository.saveAll(rows);
+        // Zapisz zmiany w bazie danych
+        rowRepository.saveAll(allRows);
     }
-    @Transactional
-    public List<RowWithAllCards> getAllRows(){
-        if (rowRepository.findAll().isEmpty()) {
-            RowWithAllCards row = new RowWithAllCards();
-            row.setPosition(0);
-            List<Card> karty = cardRepository.findAll();
-            Card kartaToDo = new Card("To do", Integer.MAX_VALUE, 0);
-            Card kartaDone = new Card("Done", Integer.MAX_VALUE, 1);
-            row.setCardsinrow(List.of(kartaDone, kartaToDo));
-            rowRepository.save(row);
-            return rowRepository.findAll();
-        }else {
-            // sort rows by position
-            List<RowWithAllCards> rows = rowRepository.findAll();
-            for (RowWithAllCards row : rows) {
-                row.getCardsinrow().sort(Comparator.comparingInt(Card::getPosition));
-            }
-            rows.sort(Comparator.comparingInt(RowWithAllCards::getPosition));
-            return rows;
-        }
-    }
+
+
 }

@@ -10,10 +10,10 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import java.util.List;
 
-@Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Entity
 @Builder
 public class Task {
     @Id
@@ -32,4 +32,9 @@ public class Task {
     private List<Useer> useers;
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
     private List<SubTasks> subTasks;
+
+    public Task(String name, int position, int maxTasksLimit) {
+        this.name = name;
+        this.position = position;
+    }
 }

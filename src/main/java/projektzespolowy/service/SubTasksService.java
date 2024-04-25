@@ -35,60 +35,52 @@ public class SubTasksService {
             Task task = taskOptional.get();
             List<SubTasks> subTasks = task.getSubTasks();
 
-            int maxPosition = subTasks.stream()
-                    .mapToInt(SubTasks::getPosition)
-                    .max()
-                    .orElse(-1);
+            if (subTasks != null) { // Sprawdzenie czy lista subzadań nie jest nullem
+                int maxPosition = subTasks.stream()
+                        .mapToInt(SubTasks::getPosition)
+                        .max()
+                        .orElse(-1);
 
-            int newPosition = maxPosition + 1;
+                int newPosition = maxPosition + 1;
 
+                subTaskDTO.setPosition(newPosition);
 
-            subTaskDTO.setPosition(newPosition);
-
-            SubTasks subTask = toSubTask(subTaskDTO);
-            subTask.setTask(task);
-            SubTasks savedSubTask = subTasksRepository.save(subTask);
-            return SubTasksDTO.from(savedSubTask);
+                SubTasks subTask = toSubTask(subTaskDTO);
+                subTask.setTask(task);
+                SubTasks savedSubTask = subTasksRepository.save(subTask);
+                return SubTasksDTO.from(savedSubTask);
+            } else {
+                throw new IllegalArgumentException("Lista subzadań dla zadania o identyfikatorze " + taskId + " jest niezainicjowana.");
+            }
         } else {
-            return null;
+            throw new IllegalArgumentException("Nie można znaleźć zadania o identyfikatorze: " + taskId);
         }
     }
 
-
-
-    public SubTasksDTO updateSubTaskColor(Long subTaskId, String color) {
-        Optional<SubTasks> subTaskOptional = subTasksRepository.findById(subTaskId);
-        if (subTaskOptional.isPresent()) {
-            SubTasks subTask = subTaskOptional.get();
-            subTask.setColor(color);
-            SubTasks updatedSubTask = subTasksRepository.save(subTask);
-            return SubTasksDTO.from(updatedSubTask);
-        } else {
-            return null;
-        }
-    }
     public int countFinishedSubTasks(Long taskId) {
         Optional<Task> taskOptional = taskRepository.findById(taskId);
         if (taskOptional.isPresent()) {
             Task task = taskOptional.get();
             List<SubTasks> subTasks = task.getSubTasks();
 
+            if (subTasks != null) { // Dodaj warunek sprawdzający, czy lista subtasków nie jest null
+                List<SubTasksDTO> subTasksDTOs = subTasks.stream()
+                        .map(SubTasksDTO::from)
+                        .collect(Collectors.toList());
 
-            List<SubTasksDTO> subTasksDTOs = subTasks.stream()
-                    .map(SubTasksDTO::from)
-                    .collect(Collectors.toList());
+                long finishedCount = subTasksDTOs.stream()
+                        .filter(SubTasksDTO::isFinished)
+                        .count();
 
-
-            long finishedCount = subTasksDTOs.stream()
-                    .filter(SubTasksDTO::isFinished)
-                    .count();
-
-            return (int) finishedCount;
+                return (int) finishedCount;
+            } else {
+                return 0;
+            }
         } else {
-
             return 0;
         }
     }
+
     public SubTasksDTO deleteSubTask(Long subTaskId) {
         Optional<SubTasks> subTaskOptional = subTasksRepository.findById(subTaskId);
         if (subTaskOptional.isPresent()) {
@@ -109,9 +101,10 @@ public class SubTasksService {
 
             return SubTasksDTO.from(subTask);
         } else {
-            return null;
+            throw new IllegalArgumentException("Subtask o identyfikatorze " + subTaskId + " nie istnieje.");
         }
     }
+
 
 
     public SubTasksDTO updateSubTaskFinished(Long subTaskId, boolean finished) {

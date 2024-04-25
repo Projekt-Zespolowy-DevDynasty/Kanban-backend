@@ -25,7 +25,12 @@ public class SubTasksDTO {
         dto.setFinished(subTask.isFinished());
         dto.setPosition(subTask.getPosition());
         dto.setColor(subTask.getColor());
-        dto.setTaskId(subTask.getTask().getId());
+
+
+        if (subTask.getTask() != null) {
+            dto.setTaskId(subTask.getTask().getId());
+        }
+
         return dto;
     }
     public static SubTasks to(SubTasksDTO dto) {

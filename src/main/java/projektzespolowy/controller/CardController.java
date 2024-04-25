@@ -53,7 +53,7 @@ public class CardController {
 
     @PostMapping("/add")
     private ResponseEntity<CardDTO> addCard(@RequestBody Card card) {
-        Card savedCard = cardService.addCard(card);
+        Card savedCard = cardService.addCard(CardDTO.from(card));
         return new ResponseEntity<>(CardDTO.from(savedCard), HttpStatus.CREATED);
     }
 

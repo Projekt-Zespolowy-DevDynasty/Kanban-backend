@@ -17,6 +17,7 @@ import projektzespolowy.repository.UserRepository;
 import projektzespolowy.utils.ColorGenerator;
 import projektzespolowy.wyjatki.ResourceNotFoundException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,9 +56,15 @@ public class UserService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
+
+        if (user.getTasks() == null) {
+
+            user.setTasks(new ArrayList<>());
+        }
+
+
         if (user.getTasks().size() >= user.getMaxUserTasksLimit()) {
             throw new IllegalArgumentException("Nazwa karty nie może być pusta ani składać się wyłącznie z białych znaków.");
-
         }
 
         if (task.getUseers().contains(user)) {
@@ -68,6 +75,7 @@ public class UserService {
         taskRepository.save(task);
         return "Przypisano użytkownika do zadania";
     }
+
 
     public String removeUserFromTask(Long userId, Long taskId) {
         Useer user = userRepository.findById(userId)

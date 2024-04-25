@@ -17,6 +17,7 @@ import projektzespolowy.repository.TaskRepository;
 import projektzespolowy.wyjatki.ResourceNotFoundException;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
@@ -54,32 +55,38 @@ public class CardServiceImpl implements CardService {
         pomocniczaLista.sort(Comparator.comparingInt(Card::getPosition));
         return pomocniczaLista;
     }
-    public Card addCard(Card cardArg) {
-        if (cardArg.getName() == null || cardArg.getName().trim().isEmpty()) {
+    public Card addCard(CardDTO cardDTO) {
+        // Walidacja danych w cardDTO
+        if (cardDTO.getName() == null || cardDTO.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Nazwa karty nie może być pusta ani składać się wyłącznie z białych znaków.");
         }
 
-        if (cardArg.getName().equals("To do") || cardArg.getName().equals("Done")) {
-            throw new UnsupportedOperationException("Nie można dodać karty o nazwie: ");
+        if (cardDTO.getName().equals("To do") || cardDTO.getName().equals("Done")) {
+            throw new UnsupportedOperationException("Nie można dodać karty o nazwie: " + cardDTO.getName());
         }
 
-        List<Card> cards = cardRepository.findAll();
-        Card doneCard = cards.stream()
-                .filter(c -> c.getName().equals("Done"))
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o nazwie: Done"));
+        // Znalezienie karty "Done" w bazie danych
+        Card doneCard = cardRepository.findByName("Done").orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o nazwie: Done"));
 
+        // Tworzenie nowej karty na podstawie danych z cardDTO
         Card card = new Card();
-        card.setName(cardArg.getName());
-        card.setMaxTasksLimit(cardArg.getMaxTasksLimit());
+        card.setName(cardDTO.getName());
+        card.setMaxTasksLimit(cardDTO.getMaxTasksLimit());
         card.setPosition(doneCard.getPosition());
         doneCard.setPosition(doneCard.getPosition() + 1);
-        card.setMaxTasksLimit(5);
+        card.setMaxTasksLimit(5); // Możesz zmienić limit zadań, jeśli jest to konieczne
 
+        // Inicjalizacja pustej listy zadań dla nowej karty
+        card.setTasks(new ArrayList<>());
+
+        // Zapisanie zmian w karcie "Done"
         cardRepository.save(doneCard);
+
+        // Zapisanie nowej karty do repozytorium
         Card savedCard = cardRepository.save(card);
         return savedCard;
     }
+
 
     public void deleteTaskFromCard(Long cardId, Long taskId) {
         Card card = cardRepository.findById(cardId)
@@ -104,11 +111,15 @@ public class CardServiceImpl implements CardService {
             row.getCardsinrow().forEach(card -> {
                 if (card.getPosition() == targetPosition) {
                     card.setMaxTasksLimit(maxTasksLimit);
-                    cardRepository.save(card);
                 }
             });
         });
+
+        // Po aktualizacji wartości maxTasksLimit dla wszystkich kart, zapisz zmiany w bazie danych
+        cardRepository.saveAll(rows.stream().flatMap(row -> row.getCardsinrow().stream()).collect(Collectors.toList()));
     }
+
+
     public void editColumnName(Long id, String newName) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o podanym ID: " + id));
