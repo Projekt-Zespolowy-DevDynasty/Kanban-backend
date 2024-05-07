@@ -87,6 +87,10 @@ public class RowController {
         rowService.removeColumnAndAdjust(position);
         return ResponseEntity.ok().build();
     }
+    @PostMapping("/add-column")
+    private ResponseEntity<RowWithAllCardsDTO> addColumnToRow(@RequestBody String name) {
+        return rowService.addColumnToRow(name);
+    }
 
     @PutMapping("/move-column/{sourceColumnPosition}/{targetColumnPosition}")
     public ResponseEntity<Void> moveColumn(@PathVariable Integer sourceColumnPosition, @PathVariable Integer targetColumnPosition) {

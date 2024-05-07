@@ -1,6 +1,9 @@
 package projektzespolowy.service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import projektzespolowy.DTO.RowWithAllCardsDTO;
 import projektzespolowy.models.Card;
 import projektzespolowy.models.RowWithAllCards;
 import projektzespolowy.repository.CardRepository;
@@ -32,6 +35,43 @@ public class RowWithAllCardsService {
     public RowWithAllCards getRowByPosition(Integer rowPosition) {
         return rowRepository.findByPosition(rowPosition)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono wiersza o pozycji: " + rowPosition));
+    }
+    public ResponseEntity<RowWithAllCardsDTO> addColumnToRow(String name) {
+
+        if (name.equals("To do") || name.equals("Done")) {
+            throw new UnsupportedOperationException("Nie można dodać karty o nazwie: " + name);
+        }
+        if (name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nazwa karty nie może być pusta ani składać się wyłącznie z białych znaków.");
+        }
+
+
+        List<RowWithAllCards> rowsToUpdate = rowRepository.findAll();
+        for (RowWithAllCards row : rowsToUpdate) {
+            List<Card> cards = row.getCardsinrow();
+
+
+            Card doneCard = cards.stream()
+                    .filter(c -> c.getName().equals("Done"))
+                    .findFirst()
+                    .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono karty o nazwie: Done"));
+
+
+            Card card = new Card();
+            card.setPosition(doneCard.getPosition());
+            doneCard.setPosition(doneCard.getPosition() + 1);
+
+
+            cardRepository.save(doneCard);
+            card.setMaxTasksLimit(5);
+            card.setName(name);
+            cardRepository.save(card);
+            row.getCardsinrow().add(card);
+            rowRepository.save(row);
+        }
+
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
     public RowWithAllCards getRowById(Long rowId) {
